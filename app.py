@@ -3,6 +3,7 @@ from dash import Dash, html, dcc
 from components.localFileSet_component import localFileSet_tab
 from components.metadataBrowser_layout import metadataBrowser_tab
 from components.schemaBrowser import schema_browser
+from components import stores
 
 # Creating app and applying theme.
 app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -35,7 +36,7 @@ bdsa_header = html.Div(
 
 tab_list = dcc.Tabs(
     id="bdsa_tabs",
-    value="bdsaSchema",
+    value="metadataBrowser",
     children=[
         dcc.Tab(
             label="Local FileSet",
@@ -70,7 +71,7 @@ tab_list = dcc.Tabs(
 
 
 app.layout = dbc.Container(
-    [bdsa_header, tab_list, html.Div(id="bdsa_tab_content")],
+    [stores, bdsa_header, tab_list],
     fluid=True,
 )
 
