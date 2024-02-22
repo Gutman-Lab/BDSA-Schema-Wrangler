@@ -1,3 +1,5 @@
 .pyenv/
 .npCacheDir/
-sampleItemSet/
+sampleItemSet*
+*.pyc
+metadata/

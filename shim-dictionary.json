@@ -1,0 +1,76 @@
+{
+  "stainNames": {
+    "aBeta": [
+      "AB"
+    ],
+    "Tau": [],
+    "Biels": [
+      "Bielschowsky"
+    ],
+    "HE": [
+      "H&E"
+    ],
+    "pTDP": [
+      "TDP",
+      "TDP-43"
+    ],
+    "Ubiq": [],
+    "Syn": [
+      "aSyn"
+    ],
+    "p62": [],
+    "LFB": [
+      "LFB-PAS"
+    ]
+  },
+  "regionNames": {
+    "Midbrain": [],
+    "Visual cortex": [
+      "Occipital cortex"
+    ],
+    "Amygdala": [],
+    "Striatum": [
+      "Anterior basal ganglia",
+      "Mid-level basal ganglia",
+      "Posterior basal ganglia",
+      "Basal ganglia",
+      "Anterior basal ganglia and insular cortex"
+    ],
+    "Parietal gyri": [
+      "Parietal cortex"
+    ],
+    "Pons": [],
+    "Frontal gyri": [
+      "Frontal cortex"
+    ],
+    "Posterior hippocampus": [
+      "Hippocampus",
+      "Right hippocampus",
+      "Left hippocampus"
+    ],
+    "Anterior cingulate gyrus": [
+      "Cingulate cortex"
+    ],
+    "Posterior cingulate gyrus": [
+      "Cingulate cortex"
+    ],
+    "Cerebellum": [
+      "Cerebellum and dentate nucleus"
+    ],
+    "Temporal lobe": [
+      "Temporal cortex"
+    ],
+    "Medulla": [],
+    "Thalamus": [
+      "Hypothalamus and thalamus",
+      "Thalamus, with subthalamic nucleus",
+      "Posterior basal ganglia and hypothalamus",
+      "Thalamus, including subthalamic nucleus"
+    ],
+    "Central gyri": [],
+    "Periventricular white matter": [],
+    "Anterior hippocampus": [],
+    "Olfactory bulb": [],
+    "Temporal pole": []
+  }
+}
