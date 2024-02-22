@@ -1,4 +1,4 @@
-"""Create a metadata CSV file for a sample of Emory's ADRC DSA collection."""
+"""Create a metadata CSV file for the Emory's ADRC DSA collection."""
 
 from girder_client import GirderClient
 from pathlib import Path
@@ -11,7 +11,7 @@ def main():
     print('Authenticate girder client for "https://megabrain.neurology.emory.edu"\n')
     gc.authenticate(interactive=True)
 
-    # We sample the year 2015 - list all these items.
+    # Get data from all items (images) from the Emory ADRC collection.
     metadata = []
 
     for item in gc.get(
