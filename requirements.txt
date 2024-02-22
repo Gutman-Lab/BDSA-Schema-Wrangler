@@ -1,0 +1,6 @@
+dash==2.15.0
+dash-bootstrap-components==1.5.0
+dash_ag_grid==31.0.1
+json-schema-for-humans==0.47
+girder-client==3.2.2
+pandas==2.2.0
