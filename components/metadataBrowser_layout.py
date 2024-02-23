@@ -5,45 +5,13 @@ import dash_bootstrap_components as dbc
 from pathlib import Path
 import json
 from collections import Counter
-import numpy as np
+import dash_mantine_components as dmc
+from utils import get_csv_files
 
-
-# In future version, this file might be an upload instead of read from file.
-# Get list of CSV files.
-def _get_csv_files():
-    csv_dir_path = Path("metadata")
-
-    file_names = []
-
-    for fp in csv_dir_path.glob("*.csv"):
-
-        file_names.append({"fileName": fp.name, "fileLength": len(pd.read_csv(fp))})
-
-    return file_names
-
+# Grab the CSV file data - NOTE: this may switch to a upload button later.
+csv_file_data = get_csv_files("metadata")
 
 # Tables.
-csv_files_table = dash_ag_grid.AgGrid(
-    id="csvs-table",
-    columnDefs=[
-        {"field": "fileName", "headerName": "File Name"},
-        {"field": "fileLength", "headerName": "Rows in File"},
-    ],
-    defaultColDef={
-        "filter": "agSetColumnFilter",
-        "filterParams": {"debounceMs": 2500},
-        "floatingFilter": True,
-        "sortable": True,
-        "resizable": True,
-    },
-    dashGridOptions={
-        "rowSelection": "single",
-    },
-    columnSize="autoSize",
-    rowData=_get_csv_files(),
-)
-
-
 metadata_table = dash_ag_grid.AgGrid(
     id="metadata-table",
     columnDefs=[
@@ -59,6 +27,7 @@ metadata_table = dash_ag_grid.AgGrid(
         "rowSelection": "single",
     },
     rowData=[],
+    style={"height": "75vh"},
 )
 
 stats_card = dbc.Card(
@@ -72,119 +41,147 @@ stats_card = dbc.Card(
     style={"width": "18rem"},
 )
 
-metadataBrowser_tab = dbc.Container(
+csv_select_data = [
+    {
+        "value": dct["fileName"],
+        "label": f"{dct['fileName']} (rows = {dct['fileLength']})",
+    }
+    for dct in csv_file_data
+]
+
+metadataBrowser_tab = html.Div(
     [
-        dbc.Row(
-            [
-                html.Div(
-                    dbc.Button(
-                        "Apply Schema",
-                        id="apply-schema-btn",
-                        color="primary",
-                        className="mr-1",
-                    ),
-                )
-            ]
+        dmc.Select(
+            label="Select CSV File:",
+            placeholder="No CSV files found.",
+            id="csv-select",
+            data=csv_select_data,
+            value=csv_select_data[0]["value"] if len(csv_select_data) else "",
+            style={"width": 200, "marginBottom": 10, "width": "auto"},
         ),
-        dbc.Row(
+        html.Div(
             [
-                dbc.Col(csv_files_table, width=3),
-                dbc.Col(dbc.Spinner(metadata_table), width=9),
-            ]
+                dmc.Switch(
+                    onLabel="In Fileset Only",
+                    offLabel="       Show All",
+                    size="lg",
+                    checked=True,
+                    id="filter-toggler",
+                ),
+                dbc.Button(
+                    "Apply Schema",
+                    id="apply-schema-btn",
+                    color="primary",
+                    className="mr-1",
+                ),
+            ],
+            style={"display": "flex"},
         ),
-        dbc.Spinner(stats_card),
+        dbc.Spinner(metadata_table),
+        # dbc.Spinner(stats_card),
     ],
-    fluid=True,
 )
 
 
 @callback(
     Output("metadata-store", "data"),
-    [Input("csvs-table", "selectedRows")],
-    prevent_initial_call=True,
+    [Input("csv-select", "value")],
 )
-def update_metadata_store(row):
+def update_metadata_store(value):
     """Update the metadata store from selected CSV file."""
-    if row:
-        return pd.read_csv(f'metadata/{row[0]["fileName"]}').to_dict("records")
+    if value:
+        return pd.read_csv(f"metadata/{value}").to_dict("records")
 
     return []
 
 
 @callback(
     Output("metadata-table", "rowData"),
-    [Input("metadata-store", "data")],
+    [Input("metadata-store", "data"), Input("filter-toggler", "checked")],
+    State("localFileSet_store", "data"),
     prevent_initial_call=True,
 )
-def update_metadata_table(metadata):
+def update_metadata_table(metadata, filter, local_fileset_store):
     if metadata:
+        if filter:
+            # Only show rows for file in the dataset.
+            from pprint import pprint
+
+            local_fns = [file_data["fileName"] for file_data in local_fileset_store]
+
+            df = pd.DataFrame(metadata)
+
+            df = df[df.fileName.isin(local_fns)]
+
+            return df.to_dict("records")
+
         return metadata
 
     return []
 
 
-@callback(
-    Output("metadata-stats", "children"),
-    Input("apply-schema-btn", "n_clicks"),
-    State("metadata-store", "data"),
-)
-def update_metadata_stats(n_clicks, metadata_store):
-    if n_clicks and metadata_store:
-        # Read the shim-dictionary.
-        with open("shim-dictionary.json", "r") as f:
-            shim_dict = json.load(f)
+# @callback(
+#     Output("metadata-stats", "children"),
+#     Input("apply-schema-btn", "n_clicks"),
+#     State("metadata-store", "data"),
+# )
+# def update_metadata_stats(n_clicks, metadata_store):
+#     if n_clicks and metadata_store:
+#         # Read the shim-dictionary.
+#         with open("shim-dictionary.json", "r") as f:
+#             shim_dict = json.load(f)
 
-        df = pd.DataFrame(metadata_store).fillna("")
+#         df = pd.DataFrame(metadata_store).fillna("")
 
-        # Do the mapping and return stats.
-        stats = {"validStains": [], "validRegions": []}
+#         # Do the mapping and return stats.
+#         stats = {"validStains": [], "validRegions": []}
 
-        for _, r in df.iterrows():
-            # Check if stain and region name is valid.
-            stain = r["stainID"].capitalize()
-            region = r["regionName"].capitalize()
+#         for _, r in df.iterrows():
+#             # Check if stain and region name is valid.
+#             stain = r["stainID"].capitalize()
+#             region = r["regionName"].capitalize()
 
-            if stain in shim_dict["stainNames"]:
-                stats["validStains"].append(stain)
-            else:
-                # Attempt to remap!
-                for s, values in shim_dict["stainNames"].items():
-                    for v in values:
-                        if v == stain:
-                            stats["validStains"].append(s)
+#             if stain in shim_dict["stainNames"]:
+#                 stats["validStains"].append(stain)
+#             else:
+#                 # Attempt to remap!
+#                 for s, values in shim_dict["stainNames"].items():
+#                     for v in values:
+#                         if v == stain:
+#                             stats["validStains"].append(s)
 
-            if region in shim_dict["regionNames"]:
-                stats["validRegions"].append(region)
-            else:
-                # Attempt to remap!
-                for s, values in shim_dict["regionNames"].items():
-                    for v in values:
-                        if v == region:
-                            stats["validRegions"].append(s)
+#             if region in shim_dict["regionNames"]:
+#                 stats["validRegions"].append(region)
+#             else:
+#                 # Attempt to remap!
+#                 for s, values in shim_dict["regionNames"].items():
+#                     for v in values:
+#                         if v == region:
+#                             stats["validRegions"].append(s)
 
-        # Report the stats.
-        regions = Counter(stats["validRegions"])
-        stains = Counter(stats["validStains"])
+#         # Report the stats.
+#         regions = Counter(stats["validRegions"])
+#         stains = Counter(stats["validStains"])
 
-        nl = html.Br()
+#         nl = html.Br()
 
-        t = "Valid Stains Found"
-        report = [f"Rows found in CSV: {len(df)}", nl, t, nl, "-" * len(t), nl]
+#         t = "Valid Stains Found"
+#         report = [f"Rows found in CSV: {len(df)}", nl, t, nl, "-" * len(t), nl]
 
-        for k, v in stains.items():
-            report.append(f"   {k} (n={v})")
-            report.append(nl)
+#         for k, v in stains.items():
+#             report.append(f"   {k} (n={v})")
+#             report.append(nl)
 
-        t = "Valid Regions Found"
-        report.extend([nl, t, nl, "-" * len(t), nl])
+#         t = "Valid Regions Found"
+#         report.extend([nl, t, nl, "-" * len(t), nl])
 
-        for k, v in regions.items():
-            report.append(f"   {k} (n={v})")
-            report.append(nl)
+#         for k, v in regions.items():
+#             report.append(f"   {k} (n={v})")
+#             report.append(nl)
 
-        return [html.P(report)]
+#         return [html.P(report)]
 
-    return [html.P()]
+#     return [html.P()]
 
 
 # stats_card = dbc.Card(
