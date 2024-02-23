@@ -1,5 +1,5 @@
 {
-  "stainNames": {
+  "stainID": {
     "aBeta": [
       "AB"
     ],
@@ -23,7 +23,7 @@
       "LFB-PAS"
     ]
   },
-  "regionNames": {
+  "regionName": {
     "Midbrain": [],
     "Visual cortex": [
       "Occipital cortex"

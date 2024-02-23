@@ -16,18 +16,10 @@
             "title": "Case ID",
             "pattern": "\\w+"
         },
-        "blockID": {
-            "type": "string",
-            "default": "",
-            "title": "Block ID"
-        },
         "stainID": {
             "type": "string",
             "default": "",
             "title": "The stainID Schema",
-            "examples": [
-                "Tau"
-            ],
             "enum": [
                 "pTDP",
                 "HE",
@@ -68,6 +60,11 @@
                 "Olfactory bulb",
                 "Temporal pole"
             ]
+        },
+        "blockID": {
+            "type": "string",
+            "default": "",
+            "title": "Block ID"
         }
     }
 }
