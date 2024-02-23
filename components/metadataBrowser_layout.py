@@ -2,11 +2,10 @@ from dash import html, callback, Input, Output, no_update, State
 import pandas as pd
 import dash_ag_grid
 import dash_bootstrap_components as dbc
-from pathlib import Path
-import json
-from collections import Counter
 import dash_mantine_components as dmc
 from utils import get_csv_files
+import json
+from jsonschema import Draft7Validator
 
 # Grab the CSV file data - NOTE: this may switch to a upload button later.
 csv_file_data = get_csv_files("metadata")
@@ -27,7 +26,7 @@ metadata_table = dash_ag_grid.AgGrid(
         "rowSelection": "single",
     },
     rowData=[],
-    style={"height": "75vh"},
+    style={"height": "50vh"},
 )
 
 stats_card = dbc.Card(
@@ -67,18 +66,11 @@ metadataBrowser_tab = html.Div(
                     size="lg",
                     checked=True,
                     id="filter-toggler",
-                ),
-                dbc.Button(
-                    "Apply Schema",
-                    id="apply-schema-btn",
-                    color="primary",
-                    className="mr-1",
-                ),
+                )
             ],
             style={"display": "flex"},
         ),
-        dbc.Spinner(metadata_table),
-        # dbc.Spinner(stats_card),
+        metadata_table,
     ],
 )
 
@@ -87,10 +79,18 @@ metadataBrowser_tab = html.Div(
     Output("metadata-store", "data"),
     [Input("csv-select", "value")],
 )
-def update_metadata_store(value):
-    """Update the metadata store from selected CSV file."""
-    if value:
-        return pd.read_csv(f"metadata/{value}").to_dict("records")
+def update_metadata_store(fn: str) -> list[dict]:
+    """Update the metadata store from selected CSV file.
+
+    Args:
+        fn (str): The filename of the selected CSV file.
+
+    Returns:
+        list[dict]: The metadata as a list of dictionaries.
+
+    """
+    if fn:
+        return pd.read_csv(f"metadata/{fn}").fillna("").to_dict("records")
 
     return []
 
@@ -101,96 +101,99 @@ def update_metadata_store(value):
     State("localFileSet_store", "data"),
     prevent_initial_call=True,
 )
-def update_metadata_table(metadata, filter, local_fileset_store):
-    if metadata:
-        if filter:
-            # Only show rows for file in the dataset.
-            from pprint import pprint
+def update_metadata_table(
+    metadata_data: list[dict], filter: bool, local_fileset_store: list[dict]
+) -> list[dict]:
+    """Update the metadata table when the metadata store changes or the toggle
+    to show all or just the rows matching local file set.
 
+    Args:
+        metadata_data (list[dict]): The metadata as a list of dictionaries.
+        filter (bool): The toggle to show all or just the rows matching local file set.
+        local_fileset_store (list[dict]): The local fileset store.
+
+    Returns:
+        list[dict]: The metadata as a list of dictionaries.
+
+    """
+    if metadata_data:
+        # Return the metadata directly from store, or filter it by matching to local fileset.
+        if filter:
             local_fns = [file_data["fileName"] for file_data in local_fileset_store]
 
-            df = pd.DataFrame(metadata)
+            df = pd.DataFrame(metadata_data).fillna("")
 
             df = df[df.fileName.isin(local_fns)]
 
             return df.to_dict("records")
 
-        return metadata
+        return metadata_data
 
     return []
 
 
-# @callback(
-#     Output("metadata-stats", "children"),
-#     Input("apply-schema-btn", "n_clicks"),
-#     State("metadata-store", "data"),
-# )
-# def update_metadata_stats(n_clicks, metadata_store):
-#     if n_clicks and metadata_store:
-#         # Read the shim-dictionary.
-#         with open("shim-dictionary.json", "r") as f:
-#             shim_dict = json.load(f)
+@callback(
+    Output("metadata-table", "columnDefs"),
+    [Input("metadata-table", "rowData"), Input("metadata-table", "cellValueChanged")],
+    prevent_initial_call=True,
+)
+def validate_metadata(table_data: list[dict], _: dict) -> list[dict]:
+    """Apply JSON schema validation on the metadata table data, and appropiately
+    color the table cells based on the validation results.
 
-#         df = pd.DataFrame(metadata_store).fillna("")
+    Args:
+        table_data (list[dict]): The metadata table data.
+        _ (dict): The cellValueChanged event data.
 
-#         # Do the mapping and return stats.
-#         stats = {"validStains": [], "validRegions": []}
+    Returns:
+        list[dict]: The column definitions with cell coloring based on validation results.
 
-#         for _, r in df.iterrows():
-#             # Check if stain and region name is valid.
-#             stain = r["stainID"].capitalize()
-#             region = r["regionName"].capitalize()
+    """
+    # Read the schema.
+    with open("schemaFiles/adrcNpSchema.json", "r") as fh:
+        schema = json.load(fh)
 
-#             if stain in shim_dict["stainNames"]:
-#                 stats["validStains"].append(stain)
-#             else:
-#                 # Attempt to remap!
-#                 for s, values in shim_dict["stainNames"].items():
-#                     for v in values:
-#                         if v == stain:
-#                             stats["validStains"].append(s)
+    validator = Draft7Validator(schema)
 
-#             if region in shim_dict["regionNames"]:
-#                 stats["validRegions"].append(region)
-#             else:
-#                 # Attempt to remap!
-#                 for s, values in shim_dict["regionNames"].items():
-#                     for v in values:
-#                         if v == region:
-#                             stats["validRegions"].append(s)
+    columns = None
+    indices = None
 
-#         # Report the stats.
-#         regions = Counter(stats["validRegions"])
-#         stains = Counter(stats["validStains"])
+    if len(table_data):
+        for i, row_data in enumerate(table_data):
+            if columns is None:
+                columns = list(row_data.keys())
+                indices = {col: [] for col in columns}
 
-#         nl = html.Br()
+            error_list = validator.iter_errors(row_data)
 
-#         t = "Valid Stains Found"
-#         report = [f"Rows found in CSV: {len(df)}", nl, t, nl, "-" * len(t), nl]
+            invalid_cols = []
 
-#         for k, v in stains.items():
-#             report.append(f"   {k} (n={v})")
-#             report.append(nl)
+            for e in error_list:
+                invalid_cols.append(*e.path)
 
-#         t = "Valid Regions Found"
-#         report.extend([nl, t, nl, "-" * len(t), nl])
+            for col in invalid_cols:
+                indices[col].append(i)
 
-#         for k, v in regions.items():
-#             report.append(f"   {k} (n={v})")
-#             report.append(nl)
+        columnDefs = []
 
-#         return [html.P(report)]
+        for col, indices in indices.items():
+            indices = ",".join([str(i) for i in indices])
+            columnDefs.append(
+                {
+                    "field": col,
+                    "editable": True,
+                    "cellStyle": {
+                        "styleConditions": [
+                            {
+                                "condition": f"[{indices}].includes(params.rowIndex)",
+                                "style": {"backgroundColor": "#FFB3B3"},
+                            },
+                        ],
+                        "defaultStyle": {"backgroundColor": "#A7FF9D"},
+                    },
+                }
+            )
 
-#     return [html.P()]
+        return columnDefs
 
-
-# stats_card = dbc.Card(
-#     [
-#         dbc.CardHeader(
-#             "Metadata Statistics",
-#             style={"fontSize": "24px", "fontWeight": "bold"},
-#         ),
-#         dbc.CardBody([], id="metadata-stats"),
-#     ],
-#     style={"width": "18rem"},
-# )
+    return []

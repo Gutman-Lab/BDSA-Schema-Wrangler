@@ -5,71 +5,69 @@
     "default": {},
     "title": "Root Schema",
     "required": [
-        "npSchema"
+        "caseID",
+        "regionName",
+        "stainID"
     ],
     "properties": {
-        "npSchema": {
-            "type": "object",
-            "default": {},
-            "title": "The npSchema Schema",
-            "required": [
-                "blockID",
-                "caseID",
-                "stainID"
+        "caseID": {
+            "type": "string",
+            "default": "",
+            "title": "Case ID",
+            "pattern": "\\w+"
+        },
+        "blockID": {
+            "type": "string",
+            "default": "",
+            "title": "Block ID"
+        },
+        "stainID": {
+            "type": "string",
+            "default": "",
+            "title": "The stainID Schema",
+            "examples": [
+                "Tau"
             ],
-            "properties": {
-                "blockID": {
-                    "type": "string",
-                    "default": "",
-                    "title": "The blockID Schema",
-                    "examples": [
-                        "10"
-                    ]
-                },
-                "caseID": {
-                    "type": "string",
-                    "default": "",
-                    "title": "The caseID Schema",
-                    "examples": [
-                        "E18-7"
-                    ],
-                    "pattern": "^(E|A)\\d\\d-\\d+"
-                },
-                "stainID": {
-                    "type": "string",
-                    "default": "",
-                    "title": "The stainID Schema",
-                    "examples": [
-                        "Tau"
-                    ],
-                    "enum": [
-                        "pTDP",
-                        "HE",
-                        "aBeta",
-                        "Ubiq",
-                        "Tau",
-                        "Biels",
-                        "Syn",
-                        "p62",
-                        "LFB",
-                        "FUS",
-                        "TDP-43",
-                        "GFAP"
-                    ]
-                }
-            },
-            "examples": [{
-                "blockID": "10",
-                "caseID": "E18-7",
-                "stainID": "Tau"
-            }]
+            "enum": [
+                "pTDP",
+                "HE",
+                "aBeta",
+                "Ubiq",
+                "Tau",
+                "Biels",
+                "Syn",
+                "p62",
+                "LFB",
+                "FUS",
+                "TDP-43",
+                "GFAP"
+            ]
+        },
+        "regionName": {
+            "type": "string",
+            "default": "",
+            "title": "Region Name",
+            "enum": [
+                "Midbrain",
+                "Visual cortex",
+                "Amygdala",
+                "Striatum",
+                "Parietal gyri",
+                "Pons",
+                "Frontal gyri",
+                "Posterior hippocampus",
+                "Anterior cingulate gyrus",
+                "Posterior cingulate gyrus",
+                "Cerebellum",
+                "Temporal lobe",
+                "Medulla",
+                "Thalamus",
+                "Central gyri",
+                "Periventricular white matter",
+                "Anterior hippocampus",
+                "Olfactory bulb",
+                "Temporal pole"
+            ]
         }
-    },
-    "examples": [{
-        "npSchema": {
-            "blockID": "10",
-            "caseID": "E18-7",
-            "stainID": "Tau"
-        }
-    }]
+    }
 }
