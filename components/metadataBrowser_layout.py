@@ -26,7 +26,7 @@ metadata_table = dash_ag_grid.AgGrid(
         "rowSelection": "single",
     },
     rowData=[],
-    style={"height": "50vh"},
+    style={"height": "70vh"},
 )
 
 stats_card = dbc.Card(
@@ -60,13 +60,26 @@ metadataBrowser_tab = html.Div(
         ),
         html.Div(
             [
+                html.Div("Showing:  "),
                 dmc.Switch(
-                    onLabel="In Fileset Only",
-                    offLabel="       Show All",
+                    onLabel="In Fileset",
+                    offLabel="All",
                     size="lg",
                     checked=True,
                     id="filter-toggler",
-                )
+                ),
+                dbc.Button(
+                    "Apply Shim Dictionary",
+                    id="shim-dict-btn",
+                    color="warning",
+                    className="me-1",
+                ),
+                dbc.Button(
+                    "Export CSV",
+                    id="export-btn",
+                    color="success",
+                    className="me-1",
+                ),
             ],
             style={"display": "flex"},
         ),
@@ -77,20 +90,39 @@ metadataBrowser_tab = html.Div(
 
 @callback(
     Output("metadata-store", "data"),
-    [Input("csv-select", "value")],
+    [Input("csv-select", "value"), Input("shim-dict-btn", "n_clicks")],
 )
-def update_metadata_store(fn: str) -> list[dict]:
+def update_metadata_store(fn: str, n_clicks: int) -> list[dict]:
     """Update the metadata store from selected CSV file.
 
     Args:
         fn (str): The filename of the selected CSV file.
+        n_clicks (int): The number of times the button was clicked.
 
     Returns:
         list[dict]: The metadata as a list of dictionaries.
 
     """
     if fn:
-        return pd.read_csv(f"metadata/{fn}").fillna("").to_dict("records")
+        df = pd.read_csv(f"metadata/{fn}").fillna("")
+
+        if n_clicks:
+            # Apply shim dictionary.
+            with open("shim-dictionary.json", "r") as fh:
+                shim_dict = json.load(fh)
+
+            for i, r in df.iterrows():
+                for metadata_key, key_map in shim_dict.items():
+                    # Check if the row has this key.
+                    row_value = r.get(metadata_key, "")
+
+                    if row_value not in key_map:
+                        for k, v in key_map.items():
+                            if row_value in v:
+                                df.loc[i, metadata_key] = k
+                                break
+
+        return df.to_dict("records")
 
     return []
 
@@ -197,3 +229,35 @@ def validate_metadata(table_data: list[dict], _: dict) -> list[dict]:
         return columnDefs
 
     return []
+
+
+# @callback(
+#     Output("metadata-store", "data"),
+#     Input("shim-dict-btn", "n_clicks"),
+#     State("metadata-store", "data"),
+#     prevent_initial_call=True,
+# )
+# def apply_shim_dict(n_clicks: int, metadata_data: list[dict]) -> list[dict]:
+#     """Apply the shim dictionary to the metadata store.
+
+#     Args:
+#         n_clicks (int): The number of times the button was clicked.
+#         metadata_data (list[dict]): The metadata as a list of dictionaries.
+
+#     Returns:
+#         list[dict]: The metadata as a list of dictionaries.
+
+#     """
+#     # Read the shim dictionary.
+#     with open("shim-dictionary.json", "r") as fh:
+#         shim_dict = json.load(fh)
+
+#     remapped_data = []
+
+#     for item_data in metadata_data:
+#         from pprint import pprint
+
+#         pprint(metadata_data)
+#         break
+
+#     return no_update

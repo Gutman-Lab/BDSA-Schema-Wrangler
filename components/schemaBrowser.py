@@ -5,6 +5,7 @@ from dash import html, callback, Input, Output, no_update
 import dash_bootstrap_components as dbc
 from pathlib import Path
 import json
+import dash_mantine_components as dmc
 
 _theme = {
     "scheme": "monokai",
@@ -27,27 +28,58 @@ _theme = {
     "base0F": "#cc6633",
 }
 
-
 schema_browser = html.Div(
-    children=[
-        dbc.Button(
-            "Update Schema", id="update-schema-btn", color="success", className="me-1"
+    [
+        dmc.Switch(id="toggle-schema", label="JSON Schema", checked=True),
+        html.Div(
+            id="schema-component",
+            style={"overflowY": "scroll", "height": "70vh"},
         ),
-        dash_renderjson.DashRenderjson(
-            id="bdsa-schema", data={}, max_depth=-1, theme=_theme, invert_theme=True
-        ),
-    ],
-    style={"overflowY": "scroll", "height": "80vh"},
+    ]
 )
 
+schema_path = Path("shim-dictionary.json")
 
-@callback(Output("bdsa-schema", "data"), Input("update-schema-btn", "n_clicks"))
-def update_schema(n_clicks):
-    schema_path = Path("shim-dictionary.json")
+if schema_path.is_file():
+    with open(schema_path, "r") as fh:
+        schema = json.load(fh)
 
-    if schema_path.is_file():
-        with open(schema_path, "r") as fh:
-            schema = json.load(fh)
-        return schema
 
-    return no_update
+@callback(
+    [
+        Output("schema-component", "children"),
+        Output("toggle-schema", "label"),
+    ],
+    Input("toggle-schema", "checked"),
+)
+def toggle_schema_view(checked: bool) -> tuple[html.Div, str]:
+    """Toggle the schema view.
+
+    Args:
+        checked (bool): Whether the switch is checked.
+
+    Returns:
+        tuple[html.Div, str]: The schema view and the switch label.
+
+    """
+    if checked:
+        return (
+            html.Iframe(
+                src="assets/schema_doc.html",
+                width="100%",
+                height="800px",
+                style={"overflow": "scroll"},
+            ),
+            "JSON Schema",
+        )
+    else:
+        return (
+            dash_renderjson.DashRenderjson(
+                id="bdsa-schema",
+                data=schema,
+                max_depth=-1,
+                theme=_theme,
+                invert_theme=True,
+            ),
+            "Shim Dictionary",
+        )
