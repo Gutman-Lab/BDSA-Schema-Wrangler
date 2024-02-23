@@ -17,18 +17,20 @@ def main():
     for item in gc.get(
         "resource/641ba814867536bb7a225533/items?type=collection&limit=0"
     ):
-        # Grab the associated metadata for each item.
-        np_schema = item.get("meta", {}).get("npSchema", {})
+        if item["name"].endswith((".svs", ".ndpi")):
+            # Grab the associated metadata for each item.
+            np_schema = item.get("meta", {}).get("npSchema", {})
 
-        metadata.append(
-            [
-                item["name"],
-                np_schema.get("caseID", ""),
-                np_schema.get("stainID", ""),
-                np_schema.get("regionName", ""),
-                np_schema.get("blockID", ""),
-            ]
-        )
+            metadata.append(
+                [
+                    item["name"]
+                    + "_thumb_2048",  # we are comparing to some PNG thumbnails when developing
+                    np_schema.get("caseID", ""),
+                    np_schema.get("stainID", ""),
+                    np_schema.get("regionName", ""),
+                    np_schema.get("blockID", ""),
+                ]
+            )
 
     # Format as dataframe and save to CSV.
     df = pd.DataFrame(

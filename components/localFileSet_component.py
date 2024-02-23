@@ -38,13 +38,3 @@ def update_localFileSet_table(data):
 )
 def update_localFileSet_info(data):
     return f"Number of files: {len(data)}"
-
-
-@callback(
-    Output("localFileSet_table", "columnSize"),
-    Input("localFileSet_table", "rowData"),
-    prevent_initial_call=True,
-)
-def update_column_size(column_size_value):
-    """Adjust column size by its content when it changes."""
-    return "autoSize"
