@@ -6,6 +6,8 @@ from components.metadataBrowser_layout import metadataBrowser_tab
 from components.schemaBrowser import schema_browser
 from components import stores, header
 
+# from components.bdsa_wrangler_header import wrangler_header
+
 # Creating app and applying theme.
 app = Dash(
     __name__, external_stylesheets=[dbc.themes.BOOTSTRAP], assets_folder="assets"
