@@ -269,8 +269,6 @@ def validate_metadata(table_data: list[dict], _: dict) -> list[dict]:
         stain_valid_count = N - len(indices["stainID"])
         region_valid_count = N - len(indices["regionName"])
 
-        print(f"{case_valid_count} ({case_valid_count/N*100:.2f})%")
-
         stats_df = pd.DataFrame(
             [
                 ["Files", f"{valid_files} ({valid_files/N*100:.2f}%)"],
