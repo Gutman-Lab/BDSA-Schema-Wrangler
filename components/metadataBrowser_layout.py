@@ -6,6 +6,8 @@ import dash_mantine_components as dmc
 from utils import get_csv_files
 import json
 from jsonschema import Draft7Validator
+from collections import Counter
+from components.summary_tables import stats_tab
 
 # Grab the CSV file data - NOTE: this may switch to a upload button later.
 csv_file_data = get_csv_files("metadata")
@@ -26,17 +28,6 @@ metadata_table = dash_ag_grid.AgGrid(
         "paginationAutoPageSize": True,
         "rowSelection": "single",
     },
-    rowData=[],
-    style={"height": "70vh"},
-)
-
-stats_table = dash_ag_grid.AgGrid(
-    id="stats-table",
-    className="ag-theme-alpine color-fonts",
-    columnDefs=[
-        {"field": "Field"},
-        {"field": "Validated"},
-    ],
     rowData=[],
     style={"height": "70vh"},
 )
@@ -103,7 +94,7 @@ metadataBrowser_tab = html.Div(
             children=[
                 metadata_table,
                 dbc.Collapse(
-                    stats_table, id="collapse", is_open=False, style={"width": "50%"}
+                    stats_tab, id="collapse", is_open=False, style={"width": "50%"}
                 ),
                 dbc.Button(
                     "Stats",
@@ -209,7 +200,12 @@ def update_metadata_table(
 
 
 @callback(
-    [Output("metadata-table", "columnDefs"), Output("stats-table", "rowData")],
+    [
+        Output("metadata-table", "columnDefs"),
+        Output("stats-summary-table", "rowData"),
+        Output("stats-stains-table", "rowData"),
+        Output("stats-regions-table", "rowData"),
+    ],
     [Input("metadata-table", "rowData"), Input("metadata-table", "cellValueChanged")],
     prevent_initial_call=True,
 )
@@ -225,16 +221,22 @@ def validate_metadata(table_data: list[dict], _: dict) -> list[dict]:
         list[dict]: The column definitions with cell coloring based on validation results.
 
     """
-    # Read the schema.
-    with open("schemaFiles/adrcNpSchema.json", "r") as fh:
-        schema = json.load(fh)
-
-    validator = Draft7Validator(schema)
-
-    columns = None
-    indices = None
-
     if len(table_data):
+        # Read the schema.
+        with open("schemaFiles/adrcNpSchema.json", "r") as fh:
+            schema = json.load(fh)
+
+        valid_regions = schema["properties"]["regionName"]["enum"]
+        valid_stains = schema["properties"]["stainID"]["enum"]
+
+        stains = []
+        regions = []
+
+        validator = Draft7Validator(schema)
+
+        columns = None
+        indices = None
+
         # Track rows.
         stats_df = []
 
@@ -246,6 +248,12 @@ def validate_metadata(table_data: list[dict], _: dict) -> list[dict]:
             if columns is None:
                 columns = list(row_data.keys())
                 indices = {col: [] for col in columns}
+
+            if row_data["stainID"] in valid_stains:
+                stains.append(row_data["stainID"])
+
+            if row_data["regionName"] in valid_regions:
+                regions.append(row_data["regionName"])
 
             error_list = validator.iter_errors(row_data)
 
@@ -302,9 +310,21 @@ def validate_metadata(table_data: list[dict], _: dict) -> list[dict]:
                 }
             )
 
-        return columnDefs, stats_df.to_dict("records")
+        # Populate the stain and region tables.
+        regions = Counter(regions)
+        stains = Counter(stains)
 
-    return [], []
+        stain_df = pd.DataFrame(stains.items(), columns=["Stain", "Count"])
+        region_df = pd.DataFrame(regions.items(), columns=["Region", "Count"])
+
+        return (
+            columnDefs,
+            stats_df.to_dict("records"),
+            stain_df.to_dict("records"),
+            region_df.to_dict("records"),
+        )
+
+    return [], [], [], []
 
 
 @callback(Output("filter-label", "children"), [Input("filter-toggler", "checked")])
