@@ -1,7 +1,6 @@
 import dash_mantine_components as dmc
 import dash_ag_grid
-from dash import html
-
+from dash import html, Input, Output, State, callback
 
 summary_table = dash_ag_grid.AgGrid(
     id="stats-summary-table",
@@ -15,37 +14,67 @@ summary_table = dash_ag_grid.AgGrid(
         "paginationAutoPageSize": True,
     },
     rowData=[],
-    style={"height": "70vh"},
+    style={"height": "50vh"},
 )
 
-stain_table = dash_ag_grid.AgGrid(
-    id="stats-stains-table",
-    className="ag-theme-alpine color-fonts",
-    columnDefs=[
-        {"field": "Stain"},
-        {"field": "Count"},
+stain_table = html.Div(
+    children=[
+        html.Div(
+            children=[
+                dmc.Switch(size="lg", checked=True, id="stains-switch"),
+                html.Div(
+                    "Unmapped Stains",
+                    style={"marginLeft": "5px"},
+                    id="stains-switch-label",
+                ),
+            ],
+            style={"display": "flex"},
+        ),
+        dash_ag_grid.AgGrid(
+            id="stats-stains-table",
+            className="ag-theme-alpine color-fonts",
+            columnDefs=[
+                {"field": "Stain"},
+                {"field": "Count"},
+            ],
+            dashGridOptions={
+                "pagination": True,
+                "paginationAutoPageSize": True,
+            },
+            rowData=[],
+            # style={"height": "70vh"},
+        ),
     ],
-    dashGridOptions={
-        "pagination": True,
-        "paginationAutoPageSize": True,
-    },
-    rowData=[],
-    style={"height": "70vh"},
 )
 
-region_table = dash_ag_grid.AgGrid(
-    id="stats-regions-table",
-    className="ag-theme-alpine color-fonts",
-    columnDefs=[
-        {"field": "Region"},
-        {"field": "Count"},
+region_table = html.Div(
+    children=[
+        html.Div(
+            children=[
+                dmc.Switch(size="lg", checked=True, id="regions-switch"),
+                html.Div(
+                    "Unmapped Regions",
+                    style={"marginLeft": "5px"},
+                    id="regions-switch-label",
+                ),
+            ],
+            style={"display": "flex"},
+        ),
+        dash_ag_grid.AgGrid(
+            id="stats-regions-table",
+            className="ag-theme-alpine color-fonts",
+            columnDefs=[
+                {"field": "Region"},
+                {"field": "Count"},
+            ],
+            dashGridOptions={
+                "pagination": True,
+                "paginationAutoPageSize": True,
+            },
+            rowData=[],
+            # style={"height": "70vh"},
+        ),
     ],
-    dashGridOptions={
-        "pagination": True,
-        "paginationAutoPageSize": True,
-    },
-    rowData=[],
-    style={"height": "70vh"},
 )
 
 
@@ -80,3 +109,15 @@ stats_tab = html.Div(
         variant="pills",
     ),
 )
+
+
+@callback(
+    Output("regions-switch-label", "children"), Input("regions-switch", "checked")
+)
+def update_regions_switch_label(checked):
+    return "Unmapped Regions" if checked else "Valid Regions"
+
+
+@callback(Output("stains-switch-label", "children"), Input("stains-switch", "checked"))
+def update_stains_switch_label(checked):
+    return "Unmapped Stains" if checked else "Valid Stains"

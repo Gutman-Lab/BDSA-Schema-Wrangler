@@ -206,10 +206,17 @@ def update_metadata_table(
         Output("stats-stains-table", "rowData"),
         Output("stats-regions-table", "rowData"),
     ],
-    [Input("metadata-table", "rowData"), Input("metadata-table", "cellValueChanged")],
+    [
+        Input("metadata-table", "rowData"),
+        Input("metadata-table", "cellValueChanged"),
+        Input("stains-switch", "checked"),
+        Input("regions-switch", "checked"),
+    ],
     prevent_initial_call=True,
 )
-def validate_metadata(table_data: list[dict], _: dict) -> list[dict]:
+def validate_metadata(
+    table_data: list[dict], _: dict, stain_check: bool, region_check: bool
+) -> list[dict]:
     """Apply JSON schema validation on the metadata table data, and appropiately
     color the table cells based on the validation results.
 
@@ -249,10 +256,14 @@ def validate_metadata(table_data: list[dict], _: dict) -> list[dict]:
                 columns = list(row_data.keys())
                 indices = {col: [] for col in columns}
 
-            if row_data["stainID"] in valid_stains:
+            if stain_check and row_data["stainID"] not in valid_stains:
+                stains.append(row_data["stainID"])
+            elif not stain_check and row_data["stainID"] in valid_stains:
                 stains.append(row_data["stainID"])
 
-            if row_data["regionName"] in valid_regions:
+            if region_check and row_data["regionName"] not in valid_regions:
+                regions.append(row_data["regionName"])
+            elif not region_check and row_data["regionName"] in valid_regions:
                 regions.append(row_data["regionName"])
 
             error_list = validator.iter_errors(row_data)
