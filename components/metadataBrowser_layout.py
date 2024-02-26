@@ -12,15 +12,62 @@ from components.summary_tables import stats_tab
 # Grab the CSV file data - NOTE: this may switch to a upload button later.
 csv_file_data = get_csv_files("metadata")
 
+
+def get_column_defs():
+    """Read the shim dictionary."""
+    with open("schemaFiles/adrcNpSchema.json", "r") as fh:
+        schema = json.load(fh)
+
+    columnDefs = {
+        "caseID": {
+            "field": "caseID",
+            "editable": True,
+            "cellStyle": {
+                "styleConditions": [
+                    {
+                        "condition": 'params.value != ""',
+                        "style": {"backgroundColor": "#A7FF9D"},
+                    },
+                ],
+                "defaultStyle": {"backgroundColor": "#FFB3B3"},
+            },
+        }
+    }
+
+    for col in ["stainID", "regionName"]:
+
+        values = schema["properties"][col]["enum"]
+
+        values = [f'"{v}"' for v in values]
+
+        columnDefs[col] = {
+            "field": col,
+            "editable": True,
+            "cellStyle": {
+                "styleConditions": [
+                    {
+                        "condition": f"[{','.join(values)}].includes(params.value)",
+                        "style": {"backgroundColor": "#A7FF9D"},
+                    },
+                ],
+                "defaultStyle": {"backgroundColor": "#FFB3B3"},
+            },
+        }
+
+    return columnDefs
+
+
+COL_DEFS = get_column_defs()
+
 # Tables.
 metadata_table = dash_ag_grid.AgGrid(
     id="metadata-table",
     className="ag-theme-alpine color-fonts compact",
     columnDefs=[
         {"field": "fileName"},
-        {"field": "caseID"},
-        {"field": "stainID"},
-        {"field": "regionName"},
+        COL_DEFS["caseID"],
+        COL_DEFS["stainID"],
+        COL_DEFS["regionName"],
         {"field": "blockID"},
     ],
     dashGridOptions={
@@ -199,158 +246,158 @@ def update_metadata_table(
     return []
 
 
-@callback(
-    [
-        Output("metadata-table", "columnDefs"),
-        Output("stats-summary-table", "rowData"),
-        Output("stats-stains-table", "rowData"),
-        Output("stats-regions-table", "rowData"),
-    ],
-    [
-        Input("metadata-table", "rowData"),
-        Input("metadata-table", "cellValueChanged"),
-        Input("stains-switch", "checked"),
-        Input("regions-switch", "checked"),
-    ],
-    prevent_initial_call=True,
-)
-def validate_metadata(
-    table_data: list[dict], _: dict, stain_check: bool, region_check: bool
-) -> list[dict]:
-    """Apply JSON schema validation on the metadata table data, and appropiately
-    color the table cells based on the validation results.
+# @callback(
+#     [
+#         Output("metadata-table", "columnDefs"),
+#         Output("stats-summary-table", "rowData"),
+#         Output("stats-stains-table", "rowData"),
+#         Output("stats-regions-table", "rowData"),
+#     ],
+#     [
+#         Input("metadata-table", "rowData"),
+#         # Input("metadata-table", "cellValueChanged"),
+#         Input("stains-switch", "checked"),
+#         Input("regions-switch", "checked"),
+#     ],
+#     prevent_initial_call=True,
+# )
+# def validate_metadata(
+#     table_data: list[dict], stain_check: bool, region_check: bool
+# ) -> list[dict]:
+#     """Apply JSON schema validation on the metadata table data, and appropiately
+#     color the table cells based on the validation results.
 
-    Args:
-        table_data (list[dict]): The metadata table data.
-        _ (dict): The cellValueChanged event data.
+#     Args:
+#         table_data (list[dict]): The metadata table data.
+#         _ (dict): The cellValueChanged event data.
 
-    Returns:
-        list[dict]: The column definitions with cell coloring based on validation results.
+#     Returns:
+#         list[dict]: The column definitions with cell coloring based on validation results.
 
-    """
-    if len(table_data):
-        # Read the schema.
-        with open("schemaFiles/adrcNpSchema.json", "r") as fh:
-            schema = json.load(fh)
+#     """
+#     if len(table_data):
+#         # Read the schema.
+#         with open("schemaFiles/adrcNpSchema.json", "r") as fh:
+#             schema = json.load(fh)
 
-        valid_regions = schema["properties"]["regionName"]["enum"]
-        valid_stains = schema["properties"]["stainID"]["enum"]
+#         valid_regions = schema["properties"]["regionName"]["enum"]
+#         valid_stains = schema["properties"]["stainID"]["enum"]
 
-        stains = []
-        regions = []
+#         stains = []
+#         regions = []
 
-        validator = Draft7Validator(schema)
+#         validator = Draft7Validator(schema)
 
-        columns = None
-        indices = None
+#         columns = None
+#         indices = None
 
-        # Track rows.
-        stats_df = []
+#         # Track rows.
+#         stats_df = []
 
-        valid_files = 0
+#         valid_files = 0
 
-        N = len(table_data)
+#         N = len(table_data)
 
-        for i, row_data in enumerate(table_data):
-            if columns is None:
-                columns = list(row_data.keys())
-                indices = {col: [] for col in columns}
+#         for i, row_data in enumerate(table_data):
+#             if columns is None:
+#                 columns = list(row_data.keys())
+#                 indices = {col: [] for col in columns}
 
-            if stain_check and row_data["stainID"] not in valid_stains:
-                stains.append(row_data["stainID"])
-            elif not stain_check and row_data["stainID"] in valid_stains:
-                stains.append(row_data["stainID"])
+#             if stain_check and row_data["stainID"] not in valid_stains:
+#                 stains.append(row_data["stainID"])
+#             elif not stain_check and row_data["stainID"] in valid_stains:
+#                 stains.append(row_data["stainID"])
 
-            if region_check and row_data["regionName"] not in valid_regions:
-                regions.append(row_data["regionName"])
-            elif not region_check and row_data["regionName"] in valid_regions:
-                regions.append(row_data["regionName"])
+#             if region_check and row_data["regionName"] not in valid_regions:
+#                 regions.append(row_data["regionName"])
+#             elif not region_check and row_data["regionName"] in valid_regions:
+#                 regions.append(row_data["regionName"])
 
-            error_list = validator.iter_errors(row_data)
+#             error_list = validator.iter_errors(row_data)
 
-            invalid_cols = []
+#             invalid_cols = []
 
-            for e in error_list:
-                invalid_cols.append(*e.path)
+#             for e in error_list:
+#                 invalid_cols.append(*e.path)
 
-            valid_file = True
+#             valid_file = True
 
-            for col in invalid_cols:
-                if col in ["caseID", "stainID", "regionName"]:
-                    valid_file = False
+#             for col in invalid_cols:
+#                 if col in ["caseID", "stainID", "regionName"]:
+#                     valid_file = False
 
-                indices[col].append(i)
+#                 indices[col].append(i)
 
-            if valid_file:
-                valid_files += 1
+#             if valid_file:
+#                 valid_files += 1
 
-        case_valid_count = N - len(indices["caseID"])
-        stain_valid_count = N - len(indices["stainID"])
-        region_valid_count = N - len(indices["regionName"])
+#         case_valid_count = N - len(indices["caseID"])
+#         stain_valid_count = N - len(indices["stainID"])
+#         region_valid_count = N - len(indices["regionName"])
 
-        stats_df = pd.DataFrame(
-            [
-                ["Files", f"{valid_files} ({valid_files/N*100:.2f}%)"],
-                ["caseID", f"{case_valid_count} ({case_valid_count/N*100:.2f}%)"],
-                ["stainID", f"{stain_valid_count} ({stain_valid_count/N*100:.2f}%)"],
-                [
-                    "regionName",
-                    f"{region_valid_count} ({region_valid_count/N*100:.2f}%)",
-                ],
-            ],
-            columns=["Field", "Validated"],
-        )
+#         stats_df = pd.DataFrame(
+#             [
+#                 ["Files", f"{valid_files} ({valid_files/N*100:.2f}%)"],
+#                 ["caseID", f"{case_valid_count} ({case_valid_count/N*100:.2f}%)"],
+#                 ["stainID", f"{stain_valid_count} ({stain_valid_count/N*100:.2f}%)"],
+#                 [
+#                     "regionName",
+#                     f"{region_valid_count} ({region_valid_count/N*100:.2f}%)",
+#                 ],
+#             ],
+#             columns=["Field", "Validated"],
+#         )
 
-        columnDefs = []
+#         columnDefs = []
 
-        for col, indices in indices.items():
-            indices = ",".join([str(i) for i in indices])
-            columnDefs.append(
-                {
-                    "field": col,
-                    "editable": True,
-                    "cellStyle": {
-                        "styleConditions": [
-                            {
-                                "condition": f"[{indices}].includes(params.rowIndex)",
-                                "style": {"backgroundColor": "#FFB3B3"},
-                            },
-                        ],
-                        "defaultStyle": {"backgroundColor": "#A7FF9D"},
-                    },
-                }
-            )
+#         for col, indices in indices.items():
+#             indices = ",".join([str(i) for i in indices])
+#             columnDefs.append(
+#                 {
+#                     "field": col,
+#                     "editable": True,
+#                     "cellStyle": {
+#                         "styleConditions": [
+#                             {
+#                                 "condition": f'["Frontal cortex"].includes(params.value)',
+#                                 "style": {"backgroundColor": "#A7FF9D"},
+#                             },
+#                         ],
+#                         "defaultStyle": {"backgroundColor": "#FFB3B3"},
+#                     },
+#                 }
+#             )
 
-        # Populate the stain and region tables.
-        regions = Counter(regions)
-        stains = Counter(stains)
+#         # Populate the stain and region tables.
+#         regions = Counter(regions)
+#         stains = Counter(stains)
 
-        stain_df = pd.DataFrame(stains.items(), columns=["Stain", "Count"])
-        region_df = pd.DataFrame(regions.items(), columns=["Region", "Count"])
+#         stain_df = pd.DataFrame(stains.items(), columns=["Stain", "Count"])
+#         region_df = pd.DataFrame(regions.items(), columns=["Region", "Count"])
 
-        return (
-            columnDefs,
-            stats_df.to_dict("records"),
-            stain_df.to_dict("records"),
-            region_df.to_dict("records"),
-        )
+#         return (
+#             columnDefs,
+#             stats_df.to_dict("records"),
+#             stain_df.to_dict("records"),
+#             region_df.to_dict("records"),
+#         )
 
-    return [], [], [], []
+#     return [], [], [], []
 
 
-@callback(Output("filter-label", "children"), [Input("filter-toggler", "checked")])
-def update_filter_label(checked: bool) -> str:
-    """Update the filter label based on the toggle state.
+# @callback(Output("filter-label", "children"), [Input("filter-toggler", "checked")])
+# def update_filter_label(checked: bool) -> str:
+#     """Update the filter label based on the toggle state.
 
-    Args:
-        checked (bool): The toggle state.
+#     Args:
+#         checked (bool): The toggle state.
 
-    Returns:
-        str: The filter label text.
+#     Returns:
+#         str: The filter label text.
 
-    """
-    return (
-        "Showing metadata for files in local fileset."
-        if checked
-        else "Showing all metadata."
-    )
+#     """
+#     return (
+#         "Showing metadata for files in local fileset."
+#         if checked
+#         else "Showing all metadata."
+#     )
