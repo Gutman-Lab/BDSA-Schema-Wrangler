@@ -30,6 +30,17 @@ metadata_table = dash_ag_grid.AgGrid(
     style={"height": "70vh"},
 )
 
+stats_table = dash_ag_grid.AgGrid(
+    id="stats-table",
+    className="ag-theme-alpine color-fonts",
+    columnDefs=[
+        {"field": "Field"},
+        {"field": "Validated"},
+    ],
+    rowData=[],
+    style={"height": "70vh"},
+)
+
 csv_select_data = [
     {
         "value": dct["fileName"],
@@ -88,9 +99,37 @@ metadataBrowser_tab = html.Div(
             ],
             style={"display": "flex"},
         ),
-        metadata_table,
+        html.Div(
+            children=[
+                metadata_table,
+                dbc.Collapse(
+                    stats_table, id="collapse", is_open=False, style={"width": "50%"}
+                ),
+                dbc.Button(
+                    "Stats",
+                    id="stats-btn",
+                    color="primary",
+                    className="me-1",
+                    style={"height": "auto"},
+                ),
+            ],
+            style={"display": "flex"},
+        ),
     ],
 )
+
+
+@callback(
+    Output("collapse", "is_open"),
+    Input("stats-btn", "n_clicks"),
+    State("collapse", "is_open"),
+    prevent_initial_call=True,
+)
+def toggle_collapse(n_clicks: int, is_open: bool) -> bool:
+    if n_clicks:
+        return not is_open
+
+    return is_open
 
 
 @callback(
@@ -170,7 +209,7 @@ def update_metadata_table(
 
 
 @callback(
-    Output("metadata-table", "columnDefs"),
+    [Output("metadata-table", "columnDefs"), Output("stats-table", "rowData")],
     [Input("metadata-table", "rowData"), Input("metadata-table", "cellValueChanged")],
     prevent_initial_call=True,
 )
@@ -196,6 +235,13 @@ def validate_metadata(table_data: list[dict], _: dict) -> list[dict]:
     indices = None
 
     if len(table_data):
+        # Track rows.
+        stats_df = []
+
+        valid_files = 0
+
+        N = len(table_data)
+
         for i, row_data in enumerate(table_data):
             if columns is None:
                 columns = list(row_data.keys())
@@ -208,8 +254,35 @@ def validate_metadata(table_data: list[dict], _: dict) -> list[dict]:
             for e in error_list:
                 invalid_cols.append(*e.path)
 
+            valid_file = True
+
             for col in invalid_cols:
+                if col in ["caseID", "stainID", "regionName"]:
+                    valid_file = False
+
                 indices[col].append(i)
+
+            if valid_file:
+                valid_files += 1
+
+        case_valid_count = N - len(indices["caseID"])
+        stain_valid_count = N - len(indices["stainID"])
+        region_valid_count = N - len(indices["regionName"])
+
+        print(f"{case_valid_count} ({case_valid_count/N*100:.2f})%")
+
+        stats_df = pd.DataFrame(
+            [
+                ["Files", f"{valid_files} ({valid_files/N*100:.2f}%)"],
+                ["caseID", f"{case_valid_count} ({case_valid_count/N*100:.2f}%)"],
+                ["stainID", f"{stain_valid_count} ({stain_valid_count/N*100:.2f}%)"],
+                [
+                    "regionName",
+                    f"{region_valid_count} ({region_valid_count/N*100:.2f}%)",
+                ],
+            ],
+            columns=["Field", "Validated"],
+        )
 
         columnDefs = []
 
@@ -231,9 +304,9 @@ def validate_metadata(table_data: list[dict], _: dict) -> list[dict]:
                 }
             )
 
-        return columnDefs
+        return columnDefs, stats_df.to_dict("records")
 
-    return []
+    return [], []
 
 
 @callback(Output("filter-label", "children"), [Input("filter-toggler", "checked")])
