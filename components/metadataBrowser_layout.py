@@ -13,6 +13,7 @@ csv_file_data = get_csv_files("metadata")
 # Tables.
 metadata_table = dash_ag_grid.AgGrid(
     id="metadata-table",
+    className="ag-theme-alpine color-fonts",
     columnDefs=[
         {"field": "fileName"},
         {"field": "caseID"},
@@ -29,17 +30,6 @@ metadata_table = dash_ag_grid.AgGrid(
     style={"height": "70vh"},
 )
 
-stats_card = dbc.Card(
-    [
-        dbc.CardHeader(
-            "Metadata Statistics",
-            style={"fontSize": "24px", "fontWeight": "bold"},
-        ),
-        dbc.CardBody([], id="metadata-stats"),
-    ],
-    style={"width": "18rem"},
-)
-
 csv_select_data = [
     {
         "value": dct["fileName"],
@@ -50,24 +40,28 @@ csv_select_data = [
 
 metadataBrowser_tab = html.Div(
     [
-        dmc.Select(
-            label="Select CSV File:",
-            placeholder="No CSV files found.",
-            id="csv-select",
-            data=csv_select_data,
-            value=csv_select_data[0]["value"] if len(csv_select_data) else "",
-            style={"width": 200, "marginBottom": 10, "width": "auto"},
+        html.Div(
+            children=[
+                html.Div(
+                    "Select CSV File:", style={"padding": "5x", "fontWeight": "bold"}
+                ),
+                dmc.Select(
+                    placeholder="No CSV files found.",
+                    id="csv-select",
+                    data=csv_select_data,
+                    value=csv_select_data[0]["value"] if len(csv_select_data) else "",
+                    style={"marginLeft": "5px", "marginRight": "5px", "width": "300px"},
+                ),
+                dbc.Button(
+                    "Import Metadata File",
+                    color="info",
+                    className="me-1",
+                ),
+            ],
+            style={"display": "flex", "padding": "5px"},
         ),
         html.Div(
             [
-                html.Div("Showing:  "),
-                dmc.Switch(
-                    onLabel="In Fileset",
-                    offLabel="All",
-                    size="lg",
-                    checked=True,
-                    id="filter-toggler",
-                ),
                 dbc.Button(
                     "Apply Shim Dictionary",
                     id="shim-dict-btn",
@@ -79,6 +73,17 @@ metadataBrowser_tab = html.Div(
                     id="export-btn",
                     color="success",
                     className="me-1",
+                ),
+                dmc.Switch(
+                    size="lg",
+                    checked=True,
+                    id="filter-toggler",
+                    style={"marginRight": "5px"},
+                ),
+                html.Div(
+                    "Showing metadata for files in local fileset.",
+                    id="filter-label",
+                    style={"fontWeight": "bold"},
                 ),
             ],
             style={"display": "flex"},
@@ -231,33 +236,19 @@ def validate_metadata(table_data: list[dict], _: dict) -> list[dict]:
     return []
 
 
-# @callback(
-#     Output("metadata-store", "data"),
-#     Input("shim-dict-btn", "n_clicks"),
-#     State("metadata-store", "data"),
-#     prevent_initial_call=True,
-# )
-# def apply_shim_dict(n_clicks: int, metadata_data: list[dict]) -> list[dict]:
-#     """Apply the shim dictionary to the metadata store.
+@callback(Output("filter-label", "children"), [Input("filter-toggler", "checked")])
+def update_filter_label(checked: bool) -> str:
+    """Update the filter label based on the toggle state.
 
-#     Args:
-#         n_clicks (int): The number of times the button was clicked.
-#         metadata_data (list[dict]): The metadata as a list of dictionaries.
+    Args:
+        checked (bool): The toggle state.
 
-#     Returns:
-#         list[dict]: The metadata as a list of dictionaries.
+    Returns:
+        str: The filter label text.
 
-#     """
-#     # Read the shim dictionary.
-#     with open("shim-dictionary.json", "r") as fh:
-#         shim_dict = json.load(fh)
-
-#     remapped_data = []
-
-#     for item_data in metadata_data:
-#         from pprint import pprint
-
-#         pprint(metadata_data)
-#         break
-
-#     return no_update
+    """
+    return (
+        "Showing metadata for files in local fileset."
+        if checked
+        else "Showing all metadata."
+    )

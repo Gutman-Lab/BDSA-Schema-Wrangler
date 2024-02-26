@@ -19,7 +19,11 @@ localFileSet_table = dash_ag_grid.AgGrid(
 
 localFileSet_tab = html.Div(
     [
-        html.Div("Number of images found: 0", id="localFileSet_info"),
+        html.Div(
+            "Number of images found: 0",
+            id="localFileSet_info",
+            style={"fontSize": "20px", "font-weight": "bold"},
+        ),
         localFileSet_table,
     ],
 )

@@ -4,37 +4,12 @@ from dash import Dash, html, dcc
 from components.localFileSet_component import localFileSet_tab
 from components.metadataBrowser_layout import metadataBrowser_tab
 from components.schemaBrowser import schema_browser
-from components import stores
+from components import stores, header
 
 # Creating app and applying theme.
-app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
-
-
-tabs_styles = {"height": "44px", "margin-bottom": "10px"}
-tab_style = {
-    "borderBottom": "1px solid #d6d6d6",
-    "padding": "6px",
-    "fontSize": "24px",
-    "fontWeight": "bold",
-}
-
-tab_selected_style = {
-    "borderTop": "1px solid #d6d6d6",
-    "borderBottom": "1px solid #d6d6d6",
-    "backgroundColor": "#119DFF",
-    "color": "white",
-    "fontSize": "24px",
-    "padding": "6px",
-    "fontWeight": "bold",
-}
-
-
-bdsa_header = html.Div(
-    [
-        html.H1("BDSA Data Wrangler", className="display-4"),
-    ]
+app = Dash(
+    __name__, external_stylesheets=[dbc.themes.BOOTSTRAP], assets_folder="assets"
 )
-
 
 tab_list = html.Div(
     dmc.Tabs(
@@ -46,6 +21,7 @@ tab_list = html.Div(
                     dmc.Tab("BDSA Schema", value="bdsaSchema"),
                     # dmc.Tab("Mapper", value="mapper"),
                 ],
+                style={"backgroundColor": "#d9d9d6", "fontSize": "100px"},
             ),
             dmc.TabsPanel(
                 localFileSet_tab,
@@ -63,15 +39,15 @@ tab_list = html.Div(
         ],
         orientation="horizontal",
         value="metadataBrowser",
-        color="#6384c6",
+        color="#007dba",
         inverted=True,
         variant="pills",
-    )
+    ),
 )
 
 
 app.layout = dbc.Container(
-    [stores, bdsa_header, tab_list],
+    [stores, header, tab_list],
     fluid=True,
 )
 
