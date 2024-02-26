@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+tooltip_style {
+  position: absolute;
+  color: yellow;
+  /* 'background-color': 'rgba(0, 0, 0, 0.8)',
+  'color': 'w',
+  'padding': '5px',
+  'border-radius': '3px',
+  'font-size': '12px',
+  'z-index': '9999' */
+}
+
+.ag-theme-alpine.compact {
+  --ag-grid-size: 3px;
+}
+
+.ag-theme-alpine.compact.font {
+  --ag-font-size: 10px;
+}
+
+body {
+  background-color: rgba(210, 234, 250, 0.5);
+  color: #111111;
+  margin: 0.5rem auto;
+  max-width: 95%;
+  font-family: 'Mulish', sans-serif !important;
+  letter-spacing: 0.025rem;
+  overflow-y: hidden;
+}
+
+.lijc_overview_section {
+  margin: 2rem 0;
+  padding: 2rem 4rem;
+  background-color: #f7fbfd;
+
+}
+
+.overview_row1 {
+  margin: 0 -1.5rem 0 -1.5rem;
+}
+
+.overview_row2 {
+  margin: 1.5rem -1.5rem 0 -1.5rem;
+}
+
+.card_row1 {
+  margin: 0 0.5rem;
+  padding: 1rem;
+  border: 1px solid #3DC5FC;
+}
+
+.card_row2 {
+  margin: 0 0.5rem;
+  padding: 1rem;
+}
+
+.lijc_analytics_section {
+  margin: 2rem 0;
+  padding: 2rem 0;
+  border-top: 2px solid #CED5FF;
+}
+
+.calculation_variable_div {
+  margin: 0.5rem;
+}
+
+.calculation_variable_div p {
+  margin: 0.7rem 0;
+}
+
+.row1_text_div {
+  margin: 0;
+  padding: 0;
+}
+
+.row1_title_div {
+  margin: 0;
+  padding: 0 0 0.5rem 0;
+  color: #009df3;
+}
+
+.header {
+  position: relative;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3rem;
+  margin: 0;
+  padding: 0;
+}
+
+
+.logo_img {
+  position: relative;
+  height: 6.5rem;
+  width: auto;
+}
+
+.center {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+.card {
+  min-height: 20rem;
+  width: 100%;
+}

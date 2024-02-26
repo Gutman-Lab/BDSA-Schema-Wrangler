@@ -3,3 +3,5 @@ dash-mantine-components==0.12.1
 pandas==2.2.1
 dash_ag_grid==31.0.1
 dash-renderjson==0.0.1
+jsonschema==4.21.1
+

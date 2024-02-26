@@ -15,7 +15,7 @@ csv_file_data = get_csv_files("metadata")
 # Tables.
 metadata_table = dash_ag_grid.AgGrid(
     id="metadata-table",
-    className="ag-theme-alpine color-fonts",
+    className="ag-theme-alpine color-fonts compact",
     columnDefs=[
         {"field": "fileName"},
         {"field": "caseID"},
@@ -29,7 +29,7 @@ metadata_table = dash_ag_grid.AgGrid(
         "rowSelection": "single",
     },
     rowData=[],
-    style={"height": "70vh"},
+    # style={"height": "70vh"},
 )
 
 csv_select_data = [
