@@ -12,24 +12,67 @@ from components.summary_tables import stats_tab
 # Grab the CSV file data - NOTE: this may switch to a upload button later.
 csv_file_data = get_csv_files("metadata")
 
+
+def _get_column_defs():
+    """Read the shim dictionary."""
+    with open("schemaFiles/adrcNpSchema.json", "r") as fh:
+        schema = json.load(fh)
+
+    columnDefs = [
+        {"field": "fileName"},
+        {
+            "field": "caseID",
+            "editable": True,
+            "cellStyle": {
+                "styleConditions": [
+                    {
+                        "condition": 'params.value != ""',
+                        "style": {"backgroundColor": "#A7FF9D"},
+                    },
+                ],
+                "defaultStyle": {"backgroundColor": "#FFB3B3"},
+            },
+        },
+    ]
+
+    for col in ["stainID", "regionName"]:
+
+        values = schema["properties"][col]["enum"]
+
+        values = [f'"{v}"' for v in values]
+
+        columnDefs.append(
+            {
+                "field": col,
+                "editable": True,
+                "cellStyle": {
+                    "styleConditions": [
+                        {
+                            "condition": f"[{','.join(values)}].includes(params.value)",
+                            "style": {"backgroundColor": "#A7FF9D"},
+                        },
+                    ],
+                    "defaultStyle": {"backgroundColor": "#FFB3B3"},
+                },
+            }
+        )
+
+    columnDefs.append({"field": "blockID"})
+
+    return columnDefs
+
+
 # Tables.
 metadata_table = dash_ag_grid.AgGrid(
     id="metadata-table",
     className="ag-theme-alpine color-fonts compact",
-    columnDefs=[
-        {"field": "fileName"},
-        {"field": "caseID"},
-        {"field": "stainID"},
-        {"field": "regionName"},
-        {"field": "blockID"},
-    ],
+    columnDefs=_get_column_defs(),
     dashGridOptions={
         "pagination": True,
         "paginationAutoPageSize": True,
         "rowSelection": "single",
     },
     rowData=[],
-    # style={"height": "70vh"},
 )
 
 csv_select_data = [
@@ -123,6 +166,9 @@ def toggle_collapse(n_clicks: int, is_open: bool) -> bool:
     return is_open
 
 
+# NOTE: this callback will have issues when we add more CSVs.
+# NOTE: another issue with this callback, is that it applies the shim dictionary
+# to the entire data no matter if the toggle is showing only the rows in dataset
 @callback(
     Output("metadata-store", "data"),
     [Input("csv-select", "value"), Input("shim-dict-btn", "n_clicks")],
@@ -201,7 +247,6 @@ def update_metadata_table(
 
 @callback(
     [
-        Output("metadata-table", "columnDefs"),
         Output("stats-summary-table", "rowData"),
         Output("stats-stains-table", "rowData"),
         Output("stats-regions-table", "rowData"),
@@ -214,18 +259,18 @@ def update_metadata_table(
     ],
     prevent_initial_call=True,
 )
-def validate_metadata(
+def get_metadata_stats(
     table_data: list[dict], _: dict, stain_check: bool, region_check: bool
-) -> list[dict]:
-    """Apply JSON schema validation on the metadata table data, and appropiately
-    color the table cells based on the validation results.
+):
+    """Get the metadata stats to populate the summary tables.
 
     Args:
         table_data (list[dict]): The metadata table data.
         _ (dict): The cellValueChanged event data.
+        stain_check (bool): The stain switch state.
+        region_check (bool): The region switch state.
 
     Returns:
-        list[dict]: The column definitions with cell coloring based on validation results.
 
     """
     if len(table_data):
@@ -236,57 +281,37 @@ def validate_metadata(
         valid_regions = schema["properties"]["regionName"]["enum"]
         valid_stains = schema["properties"]["stainID"]["enum"]
 
-        stains = []
-        regions = []
+        # Convert to dataframe for faster searching.
+        table_data = pd.DataFrame(table_data).fillna("")
 
-        validator = Draft7Validator(schema)
+        if stain_check:
+            # Get unmapped stains.
+            df = table_data[~table_data.stainID.isin(valid_stains)]
+        else:
+            df = table_data[table_data.stainID.isin(valid_stains)]
 
-        columns = None
-        indices = None
+        stains = Counter(df.stainID.tolist())
 
-        # Track rows.
-        stats_df = []
+        if region_check:
+            # Get unmapped regions.
+            df = table_data[~table_data.regionName.isin(valid_regions)]
+        else:
+            df = table_data[table_data.regionName.isin(valid_regions)]
 
-        valid_files = 0
+        regions = Counter(df.regionName.tolist())
+
+        valid_files = len(
+            table_data[
+                (table_data.caseID != "")
+                & (table_data.stainID.isin(valid_stains))
+                & (table_data.regionName.isin(valid_regions))
+            ]
+        )
+        case_valid_count = len(table_data[table_data.caseID != ""])
+        stain_valid_count = len(table_data[table_data.stainID.isin(valid_stains)])
+        region_valid_count = len(table_data[table_data.regionName.isin(valid_regions)])
 
         N = len(table_data)
-
-        for i, row_data in enumerate(table_data):
-            if columns is None:
-                columns = list(row_data.keys())
-                indices = {col: [] for col in columns}
-
-            if stain_check and row_data["stainID"] not in valid_stains:
-                stains.append(row_data["stainID"])
-            elif not stain_check and row_data["stainID"] in valid_stains:
-                stains.append(row_data["stainID"])
-
-            if region_check and row_data["regionName"] not in valid_regions:
-                regions.append(row_data["regionName"])
-            elif not region_check and row_data["regionName"] in valid_regions:
-                regions.append(row_data["regionName"])
-
-            error_list = validator.iter_errors(row_data)
-
-            invalid_cols = []
-
-            for e in error_list:
-                invalid_cols.append(*e.path)
-
-            valid_file = True
-
-            for col in invalid_cols:
-                if col in ["caseID", "stainID", "regionName"]:
-                    valid_file = False
-
-                indices[col].append(i)
-
-            if valid_file:
-                valid_files += 1
-
-        case_valid_count = N - len(indices["caseID"])
-        stain_valid_count = N - len(indices["stainID"])
-        region_valid_count = N - len(indices["regionName"])
 
         stats_df = pd.DataFrame(
             [
@@ -301,56 +326,14 @@ def validate_metadata(
             columns=["Field", "Validated"],
         )
 
-        columnDefs = []
-
-        for col, indices in indices.items():
-            indices = ",".join([str(i) for i in indices])
-            columnDefs.append(
-                {
-                    "field": col,
-                    "editable": True,
-                    "cellStyle": {
-                        "styleConditions": [
-                            {
-                                "condition": f"[{indices}].includes(params.rowIndex)",
-                                "style": {"backgroundColor": "#FFB3B3"},
-                            },
-                        ],
-                        "defaultStyle": {"backgroundColor": "#A7FF9D"},
-                    },
-                }
-            )
-
         # Populate the stain and region tables.
-        regions = Counter(regions)
-        stains = Counter(stains)
-
         stain_df = pd.DataFrame(stains.items(), columns=["Stain", "Count"])
         region_df = pd.DataFrame(regions.items(), columns=["Region", "Count"])
 
         return (
-            columnDefs,
             stats_df.to_dict("records"),
             stain_df.to_dict("records"),
             region_df.to_dict("records"),
         )
 
-    return [], [], [], []
-
-
-@callback(Output("filter-label", "children"), [Input("filter-toggler", "checked")])
-def update_filter_label(checked: bool) -> str:
-    """Update the filter label based on the toggle state.
-
-    Args:
-        checked (bool): The toggle state.
-
-    Returns:
-        str: The filter label text.
-
-    """
-    return (
-        "Showing metadata for files in local fileset."
-        if checked
-        else "Showing all metadata."
-    )
+    return [], [], []
