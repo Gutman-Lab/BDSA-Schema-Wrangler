@@ -1,4 +1,4 @@
-from dash import html, callback, Input, Output, no_update, State
+from dash import html, callback, Input, Output, no_update, State, dcc
 import pandas as pd
 import dash_ag_grid
 import dash_bootstrap_components as dbc
@@ -87,20 +87,38 @@ metadataBrowser_tab = html.Div(
     [
         html.Div(
             children=[
-                html.Div(
-                    "Select CSV File:", style={"padding": "5x", "fontWeight": "bold"}
-                ),
-                dmc.Select(
-                    placeholder="No CSV files found.",
-                    id="csv-select",
-                    data=csv_select_data,
-                    value=csv_select_data[0]["value"] if len(csv_select_data) else "",
-                    style={"marginLeft": "5px", "marginRight": "5px", "width": "300px"},
-                ),
-                dbc.Button(
-                    "Import Metadata File",
-                    color="info",
-                    className="me-1",
+                # html.Div(
+                #     "Select CSV File:", style={"padding": "5x", "fontWeight": "bold"}
+                # ),
+                # dmc.Select(
+                #     placeholder="No CSV files found.",
+                #     id="csv-select",
+                #     data=csv_select_data,
+                #     value=csv_select_data[0]["value"] if len(csv_select_data) else "",
+                #     style={"marginLeft": "5px", "marginRight": "5px", "width": "300px"},
+                # ),
+                dcc.Upload(
+                    id="upload-data",
+                    children=html.Div(
+                        [
+                            dbc.Button(
+                                "Upload Metadata File (.csv or .xlsx)",
+                                color="info",
+                                className="me-1",
+                            ),
+                        ]
+                    ),
+                    style={
+                        "width": "100%",
+                        "height": "60px",
+                        "lineHeight": "60px",
+                        "borderWidth": "1px",
+                        "borderStyle": "dashed",
+                        "borderRadius": "5px",
+                        "textAlign": "center",
+                        "margin": "10px",
+                    },
+                    multiple=True,
                 ),
             ],
             style={"display": "flex", "padding": "5px"},
@@ -153,187 +171,187 @@ metadataBrowser_tab = html.Div(
 )
 
 
-@callback(
-    Output("collapse", "is_open"),
-    Input("stats-btn", "n_clicks"),
-    State("collapse", "is_open"),
-    prevent_initial_call=True,
-)
-def toggle_collapse(n_clicks: int, is_open: bool) -> bool:
-    if n_clicks:
-        return not is_open
+# @callback(
+#     Output("collapse", "is_open"),
+#     Input("stats-btn", "n_clicks"),
+#     State("collapse", "is_open"),
+#     prevent_initial_call=True,
+# )
+# def toggle_collapse(n_clicks: int, is_open: bool) -> bool:
+#     if n_clicks:
+#         return not is_open
 
-    return is_open
-
-
-# NOTE: this callback will have issues when we add more CSVs.
-# NOTE: another issue with this callback, is that it applies the shim dictionary
-# to the entire data no matter if the toggle is showing only the rows in dataset
-@callback(
-    Output("metadata-store", "data"),
-    [Input("csv-select", "value"), Input("shim-dict-btn", "n_clicks")],
-)
-def update_metadata_store(fn: str, n_clicks: int) -> list[dict]:
-    """Update the metadata store from selected CSV file.
-
-    Args:
-        fn (str): The filename of the selected CSV file.
-        n_clicks (int): The number of times the button was clicked.
-
-    Returns:
-        list[dict]: The metadata as a list of dictionaries.
-
-    """
-    if fn:
-        df = pd.read_csv(f"metadata/{fn}").fillna("")
-
-        if n_clicks:
-            # Apply shim dictionary.
-            with open("shim-dictionary.json", "r") as fh:
-                shim_dict = json.load(fh)
-
-            for i, r in df.iterrows():
-                for metadata_key, key_map in shim_dict.items():
-                    # Check if the row has this key.
-                    row_value = r.get(metadata_key, "")
-
-                    if row_value not in key_map:
-                        for k, v in key_map.items():
-                            if row_value in v:
-                                df.loc[i, metadata_key] = k
-                                break
-
-        return df.to_dict("records")
-
-    return []
+#     return is_open
 
 
-@callback(
-    Output("metadata-table", "rowData"),
-    [Input("metadata-store", "data"), Input("filter-toggler", "checked")],
-    State("localFileSet_store", "data"),
-    prevent_initial_call=True,
-)
-def update_metadata_table(
-    metadata_data: list[dict], filter: bool, local_fileset_store: list[dict]
-) -> list[dict]:
-    """Update the metadata table when the metadata store changes or the toggle
-    to show all or just the rows matching local file set.
+# # NOTE: this callback will have issues when we add more CSVs.
+# # NOTE: another issue with this callback, is that it applies the shim dictionary
+# # to the entire data no matter if the toggle is showing only the rows in dataset
+# @callback(
+#     Output("metadata-store", "data"),
+#     [Input("csv-select", "value"), Input("shim-dict-btn", "n_clicks")],
+# )
+# def update_metadata_store(fn: str, n_clicks: int) -> list[dict]:
+#     """Update the metadata store from selected CSV file.
 
-    Args:
-        metadata_data (list[dict]): The metadata as a list of dictionaries.
-        filter (bool): The toggle to show all or just the rows matching local file set.
-        local_fileset_store (list[dict]): The local fileset store.
+#     Args:
+#         fn (str): The filename of the selected CSV file.
+#         n_clicks (int): The number of times the button was clicked.
 
-    Returns:
-        list[dict]: The metadata as a list of dictionaries.
+#     Returns:
+#         list[dict]: The metadata as a list of dictionaries.
 
-    """
-    if metadata_data:
-        # Return the metadata directly from store, or filter it by matching to local fileset.
-        if filter:
-            local_fns = [file_data["fileName"] for file_data in local_fileset_store]
+#     """
+#     if fn:
+#         df = pd.read_csv(f"metadata/{fn}").fillna("")
 
-            df = pd.DataFrame(metadata_data).fillna("")
+#         if n_clicks:
+#             # Apply shim dictionary.
+#             with open("shim-dictionary.json", "r") as fh:
+#                 shim_dict = json.load(fh)
 
-            df = df[df.fileName.isin(local_fns)]
+#             for i, r in df.iterrows():
+#                 for metadata_key, key_map in shim_dict.items():
+#                     # Check if the row has this key.
+#                     row_value = r.get(metadata_key, "")
 
-            return df.to_dict("records")
+#                     if row_value not in key_map:
+#                         for k, v in key_map.items():
+#                             if row_value in v:
+#                                 df.loc[i, metadata_key] = k
+#                                 break
 
-        return metadata_data
+#         return df.to_dict("records")
 
-    return []
+#     return []
 
 
-@callback(
-    [
-        Output("stats-summary-table", "rowData"),
-        Output("stats-stains-table", "rowData"),
-        Output("stats-regions-table", "rowData"),
-    ],
-    [
-        Input("metadata-table", "rowData"),
-        Input("metadata-table", "cellValueChanged"),
-        Input("stains-switch", "checked"),
-        Input("regions-switch", "checked"),
-    ],
-    prevent_initial_call=True,
-)
-def get_metadata_stats(
-    table_data: list[dict], _: dict, stain_check: bool, region_check: bool
-):
-    """Get the metadata stats to populate the summary tables.
+# @callback(
+#     Output("metadata-table", "rowData"),
+#     [Input("metadata-store", "data"), Input("filter-toggler", "checked")],
+#     State("localFileSet_store", "data"),
+#     prevent_initial_call=True,
+# )
+# def update_metadata_table(
+#     metadata_data: list[dict], filter: bool, local_fileset_store: list[dict]
+# ) -> list[dict]:
+#     """Update the metadata table when the metadata store changes or the toggle
+#     to show all or just the rows matching local file set.
 
-    Args:
-        table_data (list[dict]): The metadata table data.
-        _ (dict): The cellValueChanged event data.
-        stain_check (bool): The stain switch state.
-        region_check (bool): The region switch state.
+#     Args:
+#         metadata_data (list[dict]): The metadata as a list of dictionaries.
+#         filter (bool): The toggle to show all or just the rows matching local file set.
+#         local_fileset_store (list[dict]): The local fileset store.
 
-    Returns:
+#     Returns:
+#         list[dict]: The metadata as a list of dictionaries.
 
-    """
-    if len(table_data):
-        # Read the schema.
-        with open("schemaFiles/adrcNpSchema.json", "r") as fh:
-            schema = json.load(fh)
+#     """
+#     if metadata_data:
+#         # Return the metadata directly from store, or filter it by matching to local fileset.
+#         if filter:
+#             local_fns = [file_data["fileName"] for file_data in local_fileset_store]
 
-        valid_regions = schema["properties"]["regionName"]["enum"]
-        valid_stains = schema["properties"]["stainID"]["enum"]
+#             df = pd.DataFrame(metadata_data).fillna("")
 
-        # Convert to dataframe for faster searching.
-        table_data = pd.DataFrame(table_data).fillna("")
+#             df = df[df.fileName.isin(local_fns)]
 
-        if stain_check:
-            # Get unmapped stains.
-            df = table_data[~table_data.stainID.isin(valid_stains)]
-        else:
-            df = table_data[table_data.stainID.isin(valid_stains)]
+#             return df.to_dict("records")
 
-        stains = Counter(df.stainID.tolist())
+#         return metadata_data
 
-        if region_check:
-            # Get unmapped regions.
-            df = table_data[~table_data.regionName.isin(valid_regions)]
-        else:
-            df = table_data[table_data.regionName.isin(valid_regions)]
+#     return []
 
-        regions = Counter(df.regionName.tolist())
 
-        valid_files = len(
-            table_data[
-                (table_data.caseID != "")
-                & (table_data.stainID.isin(valid_stains))
-                & (table_data.regionName.isin(valid_regions))
-            ]
-        )
-        case_valid_count = len(table_data[table_data.caseID != ""])
-        stain_valid_count = len(table_data[table_data.stainID.isin(valid_stains)])
-        region_valid_count = len(table_data[table_data.regionName.isin(valid_regions)])
+# @callback(
+#     [
+#         Output("stats-summary-table", "rowData"),
+#         Output("stats-stains-table", "rowData"),
+#         Output("stats-regions-table", "rowData"),
+#     ],
+#     [
+#         Input("metadata-table", "rowData"),
+#         Input("metadata-table", "cellValueChanged"),
+#         Input("stains-switch", "checked"),
+#         Input("regions-switch", "checked"),
+#     ],
+#     prevent_initial_call=True,
+# )
+# def get_metadata_stats(
+#     table_data: list[dict], _: dict, stain_check: bool, region_check: bool
+# ):
+#     """Get the metadata stats to populate the summary tables.
 
-        N = len(table_data)
+#     Args:
+#         table_data (list[dict]): The metadata table data.
+#         _ (dict): The cellValueChanged event data.
+#         stain_check (bool): The stain switch state.
+#         region_check (bool): The region switch state.
 
-        stats_df = pd.DataFrame(
-            [
-                ["Files", f"{valid_files} ({valid_files/N*100:.2f}%)"],
-                ["caseID", f"{case_valid_count} ({case_valid_count/N*100:.2f}%)"],
-                ["stainID", f"{stain_valid_count} ({stain_valid_count/N*100:.2f}%)"],
-                [
-                    "regionName",
-                    f"{region_valid_count} ({region_valid_count/N*100:.2f}%)",
-                ],
-            ],
-            columns=["Field", "Validated"],
-        )
+#     Returns:
 
-        # Populate the stain and region tables.
-        stain_df = pd.DataFrame(stains.items(), columns=["Stain", "Count"])
-        region_df = pd.DataFrame(regions.items(), columns=["Region", "Count"])
+#     """
+#     if len(table_data):
+#         # Read the schema.
+#         with open("schemaFiles/adrcNpSchema.json", "r") as fh:
+#             schema = json.load(fh)
 
-        return (
-            stats_df.to_dict("records"),
-            stain_df.to_dict("records"),
-            region_df.to_dict("records"),
-        )
+#         valid_regions = schema["properties"]["regionName"]["enum"]
+#         valid_stains = schema["properties"]["stainID"]["enum"]
 
-    return [], [], []
+#         # Convert to dataframe for faster searching.
+#         table_data = pd.DataFrame(table_data).fillna("")
+
+#         if stain_check:
+#             # Get unmapped stains.
+#             df = table_data[~table_data.stainID.isin(valid_stains)]
+#         else:
+#             df = table_data[table_data.stainID.isin(valid_stains)]
+
+#         stains = Counter(df.stainID.tolist())
+
+#         if region_check:
+#             # Get unmapped regions.
+#             df = table_data[~table_data.regionName.isin(valid_regions)]
+#         else:
+#             df = table_data[table_data.regionName.isin(valid_regions)]
+
+#         regions = Counter(df.regionName.tolist())
+
+#         valid_files = len(
+#             table_data[
+#                 (table_data.caseID != "")
+#                 & (table_data.stainID.isin(valid_stains))
+#                 & (table_data.regionName.isin(valid_regions))
+#             ]
+#         )
+#         case_valid_count = len(table_data[table_data.caseID != ""])
+#         stain_valid_count = len(table_data[table_data.stainID.isin(valid_stains)])
+#         region_valid_count = len(table_data[table_data.regionName.isin(valid_regions)])
+
+#         N = len(table_data)
+
+#         stats_df = pd.DataFrame(
+#             [
+#                 ["Files", f"{valid_files} ({valid_files/N*100:.2f}%)"],
+#                 ["caseID", f"{case_valid_count} ({case_valid_count/N*100:.2f}%)"],
+#                 ["stainID", f"{stain_valid_count} ({stain_valid_count/N*100:.2f}%)"],
+#                 [
+#                     "regionName",
+#                     f"{region_valid_count} ({region_valid_count/N*100:.2f}%)",
+#                 ],
+#             ],
+#             columns=["Field", "Validated"],
+#         )
+
+#         # Populate the stain and region tables.
+#         stain_df = pd.DataFrame(stains.items(), columns=["Stain", "Count"])
+#         region_df = pd.DataFrame(regions.items(), columns=["Region", "Count"])
+
+#         return (
+#             stats_df.to_dict("records"),
+#             stain_df.to_dict("records"),
+#             region_df.to_dict("records"),
+#         )
+
+#     return [], [], []
