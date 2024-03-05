@@ -3,3 +3,5 @@
 sampleItemSet*
 *.pyc
 metadata/
+env/
+example-cohort-wsis/
