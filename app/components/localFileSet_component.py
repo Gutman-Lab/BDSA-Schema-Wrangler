@@ -7,7 +7,7 @@ localFileSet_table = dash_ag_grid.AgGrid(
     columnDefs=[
         {"headerName": "File Name", "field": "fileName", "sortable": True},
         {"headerName": "File Path", "field": "filePath", "sortable": True},
-        {"headerName": "File Size (KB)", "field": "fileSize", "sortable": True},
+        {"headerName": "File Size (GB)", "field": "fileSize", "sortable": True},
     ],
     style={"height": "80vh"},
     dashGridOptions={

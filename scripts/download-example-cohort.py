@@ -29,9 +29,8 @@ def main():
     gc = GirderClient(apiUrl="https://megabrain.neurology.emory.edu/api/v1")
     gc.authenticate(interactive=True)
 
-    # Selected WSIs to demo (4 SVS and 2 NDPI files).
+    # Selected WSIs to demo (3 SVS and 2 NDPI files).
     wsi_ids = [
-        "641bfe03867536bb7a236ca2",
         "641bfde6867536bb7a236c5e",
         "641bfe20867536bb7a236ce4",
         "641bfd8f867536bb7a236b8e",
@@ -40,7 +39,7 @@ def main():
     ]
 
     # Create directory to same images to.
-    save_dir = Path("./example-cohort-wsis")
+    save_dir = Path("./app/sampleItemSet")
     save_dir.mkdir(exist_ok=True)
 
     print(f"Downloading {len(wsi_ids)} images...\n")

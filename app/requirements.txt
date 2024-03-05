@@ -6,3 +6,4 @@ dash-renderjson==0.0.1
 jsonschema==4.21.1
 girder-client==3.2.2
 tqdm==4.66.2
+jsonschema==4.21.1
