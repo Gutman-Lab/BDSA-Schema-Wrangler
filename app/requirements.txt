@@ -7,3 +7,4 @@ jsonschema==4.21.1
 girder-client==3.2.2
 tqdm==4.66.2
 jsonschema==4.21.1
+opencv-python==4.9.0.80
