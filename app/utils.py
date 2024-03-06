@@ -23,7 +23,7 @@ def get_files_with_size(root_directory: str) -> list[dict]:
                 {
                     "filePath": str(p),
                     "fileSize": round(float(p.stat().st_size / (1024**3)), 2),
-                    "fileName": p.stem,
+                    "fileName": p.name,
                 }
             )
 

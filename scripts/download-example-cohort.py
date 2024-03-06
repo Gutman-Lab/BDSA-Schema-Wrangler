@@ -1,6 +1,6 @@
 from girder_client import GirderClient
 from pathlib import Path
-from tqdm import tqdm
+import pandas as pd
 
 
 def girder_login(
@@ -30,12 +30,40 @@ def main():
     gc.authenticate(interactive=True)
 
     # Selected WSIs to demo (3 SVS and 2 NDPI files).
+    data = []
+
     wsi_ids = [
-        "641bfde6867536bb7a236c5e",
-        "641bfe20867536bb7a236ce4",
+        "641bad66867536bb7a226a2c",
+        "641bad67867536bb7a226a2e",
         "641bfd8f867536bb7a236b8e",
         "641bfb8d867536bb7a2366c6",
         "641bfb8f867536bb7a2366ca",
+        "641bad67867536bb7a226a30",
+    ]
+
+    metadata = [
+        {"caseID": "1-1", "regionName": "Amygdala", "stainID": "pTDP", "blockID": 1},
+        {"caseID": "1-1", "regionName": "Hippocampus", "stainID": "aSyn", "blockID": 2},
+        {"caseID": "1-2", "regionName": "Amygdala", "stainID": "H&E", "blockID": 1},
+        {
+            "caseID": "1-3",
+            "regionName": "Left hippocampus",
+            "stainID": "aBeta",
+            "blockID": 3,
+        },
+        {
+            "caseID": "1-4",
+            "regionName": "Left Occipital",
+            "stainID": "biels",
+            "blockID": 7,
+        },
+        {
+            "caseID": "1-5",
+            "regionName": "Amygdala",
+            "stainID": "H&E",
+            "blockID": 1,
+            "fileName": "E80-12.svs",
+        },
     ]
 
     # Create directory to same images to.
@@ -44,9 +72,18 @@ def main():
 
     print(f"Downloading {len(wsi_ids)} images...\n")
     for i, _id in enumerate(wsi_ids):
+        # Add some dummy metadata
         print(f"Downloading image ({_id}) {i+1} of {len(wsi_ids)}...")
         item = gc.getItem(_id)
         item_name = item["name"]
+
+        if i != 5:
+            # Leave one without any metadata.
+            meta = metadata[i]
+
+            meta["fileName"] = item_name
+
+            data.append(meta)
 
         # Check if file exists.
         save_fp = save_dir.joinpath(item_name)
@@ -59,6 +96,10 @@ def main():
                 print(f'   Image already exists at "{str(save_fp)}".')
         else:
             print("   Skipping file because large image file does not exist.")
+
+    data.append(metadata[-1])
+    df = pd.DataFrame(data)
+    df.to_csv("./app/data.csv", index=False)
 
 
 if __name__ == "__main__":
