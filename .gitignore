@@ -5,3 +5,5 @@ sampleItemSet*
 metadata/
 env/
 example-cohort-wsis/
+.pyenv/*
+*.tiffenv/*
