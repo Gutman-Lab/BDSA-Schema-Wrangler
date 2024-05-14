@@ -1,0 +1,100 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://example.com/product.schema.json",
+    "title": "BDSA Schema",
+    "description": "JSON Schema for the BDSA Project.",
+    "type": "object",
+    "required": ["bdsa-id", "stain-id", "region-id"],
+    "properties": {
+        "bdsa-id": {
+            "type": "string",
+            "title": "BDSA ID",
+            "pattern": "^BDSA\\d+\\.\\d+$"
+        },
+        "stain-id": {
+            "type": "object",
+            "title": "Stain ID",
+            "properties": {
+                "HE": {
+                    "type": "object",
+                    "title": "HE"
+                },
+                "Tau": {
+                    "type": "object",
+                    "title": "Tau",
+                    "properties": {
+                        "antibody": {
+                            "type": "string",
+                            "title": "Antibody",
+                            "enum": ["AT8", "PHF1"]
+                        },
+                        "vendor": {
+                            "type": "string",
+                            "title": "Vendor",
+                            "pattern": "^\\w+$"
+                        }
+                    }
+                },
+                "aBeta": {
+                    "type": "object",
+                    "title": "aBeta",
+                    "properties": {
+                        "antibody": {
+                            "type": "string",
+                            "title": "Antibody",
+                            "enum": ["4G8", "6E10"]
+                        },
+                        "vendor": {
+                            "type": "string",
+                            "title": "Vendor",
+                            "pattern": "^\\w+$"
+                        }
+                    }
+                },
+                "pTDP": {
+                    "type": "object",
+                    "title": "pTDP",
+                    "properties": {
+                        "antibody": {
+                            "type": "string",
+                            "title": "Antibody",
+                            "enum": ["pS409/410", "pS403/404"]
+                        },
+                        "vendor": {
+                            "type": "string",
+                            "title": "Vendor",
+                            "pattern": "^\\w+$"
+                        }
+                    }
+                },
+            },
+            "minProperties": 1,
+            "additionalProperties": false
+        },
+        "region-id": {
+            "type": "string",
+            "title": "Region ID",
+            "enum": [
+                "Midbrain",
+                "Visual cortex",
+                "Amygdala",
+                "Striatum",
+                "Parietal gyri",
+                "Pons",
+                "Frontal gyri",
+                "Posterior hippocampus",
+                "Anterior cingulate gyrus",
+                "Posterior cingulate gyrus",
+                "Cerebellum",
+                "Temporal lobe",
+                "Medulla",
+                "Thalamus",
+                "Central gyri",
+                "Periventricular white matter",
+                "Anterior hippocampus",
+                "Olfactory bulb",
+                "Temporal pole"
+            ]
+        }
+    }
+}
