@@ -4,7 +4,11 @@
     "title": "BDSA Schema",
     "description": "JSON Schema for the BDSA Project.",
     "type": "object",
-    "required": ["bdsa-id", "stain-id", "region-id"],
+    "required": [
+        "bdsaID",
+        "stainID",
+        "regionID"
+    ],
     "properties": {
         "bdsaID": {
             "type": "string",
@@ -19,6 +23,40 @@
                     "type": "object",
                     "title": "HE"
                 },
+                "Silver": {
+                    "type": "object",
+                    "title": "Silver"
+                },
+                "Thioflavin": {
+                    "type": "object",
+                    "title": "Thioflavin"
+                },
+                "alphaSynuclein": {
+                    "type": "object",
+                    "title": "alphaSynuclein",
+                    "properties": {
+                        "antibody": {
+                            "type": "string",
+                            "title": "Antibody",
+                            "enum": [
+                                "Syn303",
+                                "Syn211",
+                                "Syn506"
+                            ]
+                        },
+                        "vendor": {
+                            "type": "string",
+                            "title": "Vendor",
+                            "pattern": "^\\w+$"
+                        },
+                        "dilution": {
+                            "type": "string",
+                            "title": "Dilution",
+                            "_comment": "Mapped to NCI CDE 'Laboratory Procedure Antibody Dilution Ratio Text' (CDE ID 2189728)",
+                            "pattern": "^\\d+:\\d+$"
+                        }
+                    }
+                },
                 "Tau": {
                     "type": "object",
                     "title": "Tau",
@@ -26,12 +64,25 @@
                         "antibody": {
                             "type": "string",
                             "title": "Antibody",
-                            "enum": ["AT8", "PHF1"]
+                            "enum": [
+                                "AT8",
+                                "PHF1",
+                                "CP13",
+                                "Total Tau",
+                                "RD3",
+                                "RD4"
+                            ]
                         },
                         "vendor": {
                             "type": "string",
                             "title": "Vendor",
                             "pattern": "^\\w+$"
+                        },
+                        "dilution": {
+                            "type": "string",
+                            "title": "Dilution",
+                            "_comment": "Mapped to NCI CDE 'Laboratory Procedure Antibody Dilution Ratio Text' (CDE ID 2189728)",
+                            "pattern": "^\\d+:\\d+$"
                         }
                     }
                 },
@@ -42,12 +93,21 @@
                         "antibody": {
                             "type": "string",
                             "title": "Antibody",
-                            "enum": ["4G8", "6E10"]
+                            "enum": [
+                                "4G8",
+                                "6E10"
+                            ]
                         },
                         "vendor": {
                             "type": "string",
                             "title": "Vendor",
                             "pattern": "^\\w+$"
+                        },
+                        "dilution": {
+                            "type": "string",
+                            "title": "Dilution",
+                            "_comment": "Mapped to NCI CDE 'Laboratory Procedure Antibody Dilution Ratio Text' (CDE ID 2189728)",
+                            "pattern": "^\\d+:\\d+$"
                         }
                     }
                 },
@@ -58,12 +118,21 @@
                         "antibody": {
                             "type": "string",
                             "title": "Antibody",
-                            "enum": ["pS409/410", "pS403/404"]
+                            "enum": [
+                                "pS409/410",
+                                "pS403/404"
+                            ]
                         },
                         "vendor": {
                             "type": "string",
                             "title": "Vendor",
                             "pattern": "^\\w+$"
+                        },
+                        "dilution": {
+                            "type": "string",
+                            "title": "Dilution",
+                            "_comment": "Mapped to NCI CDE 'Laboratory Procedure Antibody Dilution Ratio Text' (CDE ID 2189728)",
+                            "pattern": "^\\d+:\\d+$"
                         }
                     }
                 }
@@ -71,30 +140,59 @@
             "minProperties": 1,
             "additionalProperties": false
         },
-        "regionID": {
-            "type": "string",
-            "title": "Region ID",
-            "enum": [
-                "Midbrain",
-                "Visual cortex",
-                "Amygdala",
-                "Striatum",
-                "Parietal gyri",
-                "Pons",
-                "Frontal gyri",
-                "Posterior hippocampus",
-                "Anterior cingulate gyrus",
-                "Posterior cingulate gyrus",
-                "Cerebellum",
-                "Temporal lobe",
-                "Medulla",
-                "Thalamus",
-                "Central gyri",
-                "Periventricular white matter",
-                "Anterior hippocampus",
-                "Olfactory bulb",
-                "Temporal pole"
-            ]
+        "regionIDs": {
+            "type": "array",
+            "title": "Region IDs",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "region": {
+                        "type": "string",
+                        "enum": [
+                            "Midbrain",
+                            "Visual cortex",
+                            "Amygdala",
+                            "Striatum",
+                            "Parietal gyri",
+                            "Pons",
+                            "Frontal gyri",
+                            "Posterior hippocampus",
+                            "Anterior cingulate gyrus",
+                            "Posterior cingulate gyrus",
+                            "Cerebellum",
+                            "Temporal lobe",
+                            "Medulla",
+                            "Thalamus",
+                            "Central gyri",
+                            "Periventricular white matter",
+                            "Anterior hippocampus",
+                            "Olfactory bulb",
+                            "Temporal pole"
+                        ]
+                    },
+                    "hemisphere": {
+                        "type": "string",
+                        "enum": [
+                            "left",
+                            "right"
+                        ]
+                    },
+                    "sliceOrientation": {
+                        "type": "string",
+                        "enum": [
+                            "axial",
+                            "coronal",
+                            "sagittal"
+                        ]
+                    }
+                },
+                "required": [
+                    "region",
+                    "hemisphere",
+                    "sliceOrientation"
+                ]
+            },
+            "minItems": 1
         }
     }
 }

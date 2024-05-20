@@ -1,0 +1,3 @@
+bdsaID: This appears to be a unique identifier for a specific item or case. The NCI has a CDE for "Case ID" (CDE ID 2179644) that might be a good match.
+stainID: This seems to be related to the type of stain used in a histology or pathology experiment. The NCI has several CDEs related to staining, such as "Histologic Stain Type" (CDE ID 3109411) and "Immunohistochemical Staining Method Type" (CDE ID 2793513).
+HE: This is likely referring to Hematoxylin and Eosin staining, a common technique in histology. The NCI has a CDE for "Hematoxylin and Eosin Staining Results" (CDE ID 64202).
