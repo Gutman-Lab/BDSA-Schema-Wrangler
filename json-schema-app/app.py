@@ -64,9 +64,16 @@ app.layout = html.Div(
     Input("schema-store", "data"),
 )
 def update_viewer(data: dict):
-    print("The schema is here!")
     # Update the JSON schema viewer.
     if data:
+        return (
+            html.Iframe(
+                src="assets/bdsa-schema.html",
+                width="100%",
+                height="800px",
+                style={"overflow": "scroll"},
+            ),
+        )
         return dash_renderjson.DashRenderjson(
             data=data,
             max_depth=-1,

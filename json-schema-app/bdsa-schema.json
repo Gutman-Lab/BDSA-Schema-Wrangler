@@ -6,12 +6,12 @@
     "type": "object",
     "required": ["bdsa-id", "stain-id", "region-id"],
     "properties": {
-        "bdsa-id": {
+        "bdsaID": {
             "type": "string",
             "title": "BDSA ID",
             "pattern": "^BDSA\\d+\\.\\d+$"
         },
-        "stain-id": {
+        "stainID": {
             "type": "object",
             "title": "Stain ID",
             "properties": {
@@ -66,12 +66,12 @@
                             "pattern": "^\\w+$"
                         }
                     }
-                },
+                }
             },
             "minProperties": 1,
             "additionalProperties": false
         },
-        "region-id": {
+        "regionID": {
             "type": "string",
             "title": "Region ID",
             "enum": [
