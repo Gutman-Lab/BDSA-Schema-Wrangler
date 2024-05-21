@@ -7,55 +7,110 @@
     "required": [
         "bdsaID",
         "stainID",
-        "regionID"
+        "regionIDs"
     ],
     "properties": {
         "bdsaID": {
             "type": "string",
             "title": "BDSA ID",
-            "pattern": "^BDSA\\d+\\.\\d+$"
+            "pattern": "^BDSA\\d+\\.\\d+$",
+            "description": "Unique BDSA case identifier (example: \"BDSA1.33\")"
         },
         "stainID": {
             "type": "object",
             "title": "Stain ID",
+            "description": "Stain used on tissue section, with potentially additional information.",
             "properties": {
-                "HE": {
+                "TDP-43": {
                     "type": "object",
-                    "title": "HE"
-                },
-                "Silver": {
-                    "type": "object",
-                    "title": "Silver"
-                },
-                "Thioflavin": {
-                    "type": "object",
-                    "title": "Thioflavin"
-                },
-                "alphaSynuclein": {
-                    "type": "object",
-                    "title": "alphaSynuclein",
+                    "title": "TDP-43",
                     "properties": {
-                        "antibody": {
+                        "phospho-specific": {
                             "type": "string",
-                            "title": "Antibody",
+                            "title": "Phospho-specific",
                             "enum": [
-                                "Syn303",
-                                "Syn211",
-                                "Syn506"
+                                "yes", "no"
                             ]
+                        },
+                        "dilution": {
+                            "type": "string",
+                            "title": "Dilution",
+                            "pattern": "^\\w+$"
                         },
                         "vendor": {
                             "type": "string",
                             "title": "Vendor",
                             "pattern": "^\\w+$"
+                        }
+                    }
+                },
+                "aSyn": {
+                    "type": "object",
+                    "title": "Alpha Synuclein",
+                    "properties": {
+                        "phospho-specific": {
+                            "type": "string",
+                            "title": "Phospho-specific",
+                            "enum": [
+                                "yes", "no"
+                            ]
                         },
                         "dilution": {
                             "type": "string",
                             "title": "Dilution",
-                            "_comment": "Mapped to NCI CDE 'Laboratory Procedure Antibody Dilution Ratio Text' (CDE ID 2189728)",
-                            "pattern": "^\\d+:\\d+$"
+                            "pattern": "^\\w+$"
+                        },
+                        "vendor": {
+                            "type": "string",
+                            "title": "Vendor",
+                            "pattern": "^\\w+$"
                         }
                     }
+                },
+                "HE": {
+                    "type": "object",
+                    "title": "HE",
+                    "properties": {
+                        "dilution": {
+                            "type": "string",
+                            "title": "Dilution",
+                            "pattern": "^\\w+$"
+                        },
+                        "vendor": {
+                            "type": "string",
+                            "title": "Vendor",
+                            "pattern": "^\\w+$"
+                        }
+                    }
+                },
+                "Silver": {
+                    "type": "object",
+                    "title": "Silver",
+                    "properties": {
+                        "technique": {
+                            "type": "string",
+                            "title": "Silver Stain",
+                            "enum": [
+                                "Bielschowsky",
+                                "Gallyas",
+                                "Campbell-Switzer"
+                            ]
+                        },
+                        "dilution": {
+                            "type": "string",
+                            "title": "Dilution",
+                            "pattern": "^\\w+$"
+                        },
+                        "vendor": {
+                            "type": "string",
+                            "title": "Vendor",
+                            "pattern": "^\\w+$"
+                        }
+                    }
+                },
+                "Thioflavin": {
+                    "type": "object",
+                    "title": "Thioflavin"
                 },
                 "Tau": {
                     "type": "object",
@@ -110,89 +165,82 @@
                             "pattern": "^\\d+:\\d+$"
                         }
                     }
-                },
-                "pTDP": {
-                    "type": "object",
-                    "title": "pTDP",
-                    "properties": {
-                        "antibody": {
-                            "type": "string",
-                            "title": "Antibody",
-                            "enum": [
-                                "pS409/410",
-                                "pS403/404"
-                            ]
-                        },
-                        "vendor": {
-                            "type": "string",
-                            "title": "Vendor",
-                            "pattern": "^\\w+$"
-                        },
-                        "dilution": {
-                            "type": "string",
-                            "title": "Dilution",
-                            "_comment": "Mapped to NCI CDE 'Laboratory Procedure Antibody Dilution Ratio Text' (CDE ID 2189728)",
-                            "pattern": "^\\d+:\\d+$"
-                        }
-                    }
                 }
             },
             "minProperties": 1,
-            "additionalProperties": false
+            "maxProperties": 1
         },
         "regionIDs": {
-            "type": "array",
-            "title": "Region IDs",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "region": {
+            "type": "object",
+            "title": "Region Information",
+            "required": [
+                "regions"
+            ],
+            "properties": {
+                "regions": {
+                    "type": "array",
+                    "title": "Regions",
+                    "minItems": 1,
+                    "items": {
                         "type": "string",
                         "enum": [
-                            "Midbrain",
-                            "Visual cortex",
-                            "Amygdala",
-                            "Striatum",
-                            "Parietal gyri",
-                            "Pons",
-                            "Frontal gyri",
-                            "Posterior hippocampus",
-                            "Anterior cingulate gyrus",
-                            "Posterior cingulate gyrus",
-                            "Cerebellum",
-                            "Temporal lobe",
                             "Medulla",
+                            "Pons",
+                            "Midbrain",
                             "Thalamus",
-                            "Central gyri",
-                            "Periventricular white matter",
-                            "Anterior hippocampus",
-                            "Olfactory bulb",
-                            "Temporal pole"
-                        ]
-                    },
-                    "hemisphere": {
-                        "type": "string",
-                        "enum": [
-                            "left",
-                            "right"
-                        ]
-                    },
-                    "sliceOrientation": {
-                        "type": "string",
-                        "enum": [
-                            "axial",
-                            "coronal",
-                            "sagittal"
+                            "Basal Ganglia",
+                            "Cerebellum",
+                            "Hippocampus",
+                            "Amygdala",
+                            "Anterior Cingulate",
+                            "Frontal Lobe",
+                            "Parietal Lobe",
+                            "Occipital Lobe",
+                            "Temporal Lobe",
+                            "Olfactory Bulb",
+                            "White Matter",
+                            "Primary Motor Cortex",
+                            "Insula",
+                            "Frontal Pole",
+                            "Temporal Pole",
+                            "Spinal Cord",
+                            "Posterior Cingulate",
+                            "Hypothalamus"
                         ]
                     }
                 },
-                "required": [
-                    "region",
-                    "hemisphere",
-                    "sliceOrientation"
-                ]
-            },
-            "minItems": 1
+                "hemisphere": {
+                    "type": "string",
+                    "title": "Hemisphere",
+                    "enum": [
+                        "left",
+                        "right"
+                    ]
+                },
+                "sliceOrientation": {
+                    "title": "Slice Orientation",
+                    "type": "string",
+                    "enum": [
+                        "axial",
+                        "coronal",
+                        "sagittal"
+                    ]
+                },
+                "pathology": {
+                    "type": "array",
+                    "title": "Pathology",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "Infarct",
+                            "Lacune",
+                            "Microinfarct",
+                            "CTE",
+                            "TBI"
+                        ]
+                    }
+                }
+            }
         }
     }
 }
