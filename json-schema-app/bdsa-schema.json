@@ -178,35 +178,249 @@
             ],
             "properties": {
                 "regions": {
-                    "type": "array",
+                    "type": "object",
                     "title": "Regions",
                     "minItems": 1,
-                    "items": {
-                        "type": "string",
-                        "enum": [
-                            "Medulla",
-                            "Pons",
-                            "Midbrain",
-                            "Thalamus",
-                            "Basal Ganglia",
-                            "Cerebellum",
-                            "Hippocampus",
-                            "Amygdala",
-                            "Anterior Cingulate",
-                            "Frontal Lobe",
-                            "Parietal Lobe",
-                            "Occipital Lobe",
-                            "Temporal Lobe",
-                            "Olfactory Bulb",
-                            "White Matter",
-                            "Primary Motor Cortex",
-                            "Insula",
-                            "Frontal Pole",
-                            "Temporal Pole",
-                            "Spinal Cord",
-                            "Posterior Cingulate",
-                            "Hypothalamus"
-                        ]
+                    "additionalProperties": false,
+                    "properties": {
+                        "Olfactory Bulb": {
+                            "type": "array",
+                            "title": "Olfactory Bulb",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "Bulb",
+                                    "Tract"
+                                ]
+                            }
+                        },
+                        "Parietal Lobe": {
+                            "type": "array",
+                            "title": "Parietal Lobe",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "Super",
+                                    "Middle",
+                                    "Inferior",
+                                    "Angular gyrus",
+                                    "Supramarginal gyrus"
+                                ]
+                            }
+                        },
+                        "Temporal Pole": {
+                            "type": "array",
+                            "title": "Temporal Pole",
+                            "items": {
+                                "type": "string"
+                            },
+                            "maxItems": 0
+                        },
+                        "Frontal Lobe": {
+                            "type": "array",
+                            "title": "Frontal Lobe",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "Superior",
+                                    "Middle",
+                                    "Inferior"
+                                ]
+                            }
+                        },
+                        "Temporal Lobe": {
+                            "type": "array",
+                            "title": "Temporal Lobe",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "Superior",
+                                    "Middle",
+                                    "Inferior"
+                                ]
+                            }
+                        },
+                        "Hippocampus": {
+                            "type": "array",
+                            "title": "Hippocampus",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "CA1-4 with dentate gyrus",
+                                    "Parahippocampal gyrus",
+                                    "Tail of caudate",
+                                    "Lateral geniculate nucleus",
+                                    "Occipital temporal gyrus"
+                                ]
+                            }
+                        },
+                        "Anterior Cingulate": {
+                            "type": "array",
+                            "title": "Anterior Cingulate",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "Corpus callosum",
+                                    "Superior frontal"
+                                ]
+                            }
+                        },
+                        "Posterior Cingulate": {
+                            "type": "array",
+                            "title": "Anterior Cingulate",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "Corpus callosum",
+                                    "Superior frontal"
+                                ]
+                            }
+                        },
+                        "Amygdala": {
+                            "type": "array",
+                            "title": "Amygdala",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "Entorhinal cortex"
+                                ]
+                            }
+                        },
+                        "Thalamus": {
+                            "type": "array",
+                            "title": "Thalamus",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "Mammillary body",
+                                    "Subthalamic nucleus",
+                                    "Mammilo-thalmaic tract",
+                                    "Anterior nucleus of thalamus",
+                                    "Pulvinar"
+                                ]
+                            }
+                        },
+                        "White Matter": {
+                            "type": "array",
+                            "title": "White Matter",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "Frontal",
+                                    "Parietal",
+                                    "Temporal",
+                                    "Occipital"
+                                ]
+                            }
+                        }, 
+                        "Midbrain": {
+                            "type": "array",
+                            "title": "Midbrain",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "3rd cranial nerve",
+                                    "Substantia nigra",
+                                    "Red nucleus",
+                                    "Superior colliculus"
+                                ]
+                            }
+                        },
+                        "Pons": {
+                            "type": "array",
+                            "title": "Pons",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "Superior cerebellar peduncle",
+                                    "Inferior colliculus",
+                                    "Locus coeruleus",
+                                    "Pontine base / fibers"
+                                ]
+                            }
+                        },
+                        "Medulla": {
+                            "type": "array",
+                            "title": "Medulla",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "Dorsal motor nucleus of vagus",
+                                    "Hypoglossal nucleus",
+                                    "Inferior olive",
+                                    "Medullary velum",
+                                    "Pyramid"
+                                ]
+                            }
+                        },
+                        "Cerebellum": {
+                            "type": "array",
+                            "title": "Cerebellum",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "Dentate",
+                                    "Vermis",
+                                    "Cortex"
+                                ]
+                            }
+                        },
+                        "Basal Ganglia": {
+                            "type": "array",
+                            "title": "Basal Ganglia",
+                            "items": {
+                                "type": "string"
+                            },
+                            "maxItems": 0
+                        },
+                        "Occipital Lobe": {
+                            "type": "array",
+                            "title": "Occipital Lobe",
+                            "items": {
+                                "type": "string"
+                            },
+                            "maxItems": 0
+                        },
+                        "Primary Motor Cortex": {
+                            "type": "array",
+                            "title": "Primary Motor Cortex",
+                            "items": {
+                                "type": "string"
+                            },
+                            "maxItems": 0
+                        },
+                        "Insula": {
+                            "type": "array",
+                            "title": "Insula",
+                            "items": {
+                                "type": "string"
+                            },
+                            "maxItems": 0
+                        },
+                        "Frontal Pole": {
+                            "type": "array",
+                            "title": "Frontal Pole",
+                            "items": {
+                                "type": "string"
+                            },
+                            "maxItems": 0
+                        },
+                        "Spinal Cord": {
+                            "type": "array",
+                            "title": "Spinal Cord",
+                            "items": {
+                                "type": "string"
+                            },
+                            "maxItems": 0
+                        },
+                        "Hypothalamus": {
+                            "type": "array",
+                            "title": "Hypothalamus",
+                            "items": {
+                                "type": "string"
+                            },
+                            "maxItems": 0
+                        }
                     }
                 },
                 "hemisphere": {
@@ -226,9 +440,10 @@
                         "sagittal"
                     ]
                 },
-                "pathology": {
+                "damage": {
                     "type": "array",
-                    "title": "Pathology",
+                    "title": "Damage",
+                    "description": "Specifies tissue damage in this region and the cause of it.",
                     "items": {
                         "type": "string",
                         "enum": [
