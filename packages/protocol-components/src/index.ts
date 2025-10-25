@@ -4,8 +4,9 @@
 export { ProtocolProvider, useProtocols } from './context/ProtocolContext';
 
 // UI Components
-export { ProtocolCard } from './components/ProtocolCard';
-export { ProtocolList } from './components/ProtocolList';
+export { default as ProtocolCard } from './components/ProtocolCard';
+export { default as ProtocolList } from './components/ProtocolList';
+export { default as ProtocolModal } from './components/ProtocolModal';
 
 // Storage
 export {

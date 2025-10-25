@@ -1,0 +1,222 @@
+.protocol-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.protocol-modal-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 600px;
+    max-height: 95vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.protocol-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+}
+
+.protocol-modal-header h2 {
+    margin: 0;
+    color: #1976d2;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.protocol-modal-close-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.protocol-modal-close-button:hover {
+    background: #e9ecef;
+    color: #333;
+}
+
+.protocol-form {
+    padding: 24px 24px 40px 24px;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.protocol-form .form-group {
+    margin-bottom: 16px;
+}
+
+.protocol-form .form-group label {
+    display: block;
+    margin-bottom: 4px;
+    color: #333;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.protocol-form .form-group input,
+.protocol-form .form-group select,
+.protocol-form .form-group textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.protocol-form .form-group input:focus,
+.protocol-form .form-group select:focus,
+.protocol-form .form-group textarea:focus {
+    outline: none;
+    border-color: #1976d2;
+}
+
+.protocol-form .form-group input.error,
+.protocol-form .form-group select.error,
+.protocol-form .form-group textarea.error {
+    border-color: #dc3545;
+}
+
+.protocol-form .error-message {
+    display: block;
+    color: #dc3545;
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
+.protocol-form .form-group textarea {
+    resize: vertical;
+    min-height: 70px;
+}
+
+.protocol-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    padding: 16px 24px;
+    border-top: 1px solid #e0e0e0;
+    background: #f8f9fa;
+    border-radius: 0 0 8px 8px;
+    flex-shrink: 0;
+}
+
+.protocol-modal-cancel-button {
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.protocol-modal-cancel-button:hover {
+    background: #5a6268;
+}
+
+.protocol-modal-save-button {
+    background: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.protocol-modal-save-button:hover:not(:disabled) {
+    background: #1565c0;
+}
+
+.protocol-modal-save-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* Field hints */
+.protocol-form .field-hint {
+    display: block;
+    color: #6c757d;
+    font-size: 0.75rem;
+    margin-top: 4px;
+    font-style: italic;
+}
+
+/* Checkbox group styling */
+.protocol-form .checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+}
+
+/* Landmarks checkbox group */
+.protocol-form .landmarks-checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 8px;
+    background: #f8f9fa;
+}
+
+.protocol-form .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #333;
+    margin: 0;
+}
+
+.protocol-form .checkbox-label input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    cursor: pointer;
+}
+
+.protocol-form .checkbox-label span {
+    user-select: none;
+}
+
+/* Loading state */
+.protocol-form .loading {
+    text-align: center;
+    padding: 20px;
+    color: #6c757d;
+    font-style: italic;
+}

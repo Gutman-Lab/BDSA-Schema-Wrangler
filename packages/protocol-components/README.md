@@ -1,269 +1,348 @@
 # @bdsa/protocol-components
 
-Clean, modern state management for BDSA protocols.
+Shared protocol management components and state for BDSA applications.
 
-## 🎯 The Problem We Solved
+## Features
 
-**Before:** 
-- Class-based store with manual subscriptions
-- Separate `stainProtocols` and `regionProtocols` arrays  
-- Multiple sources of truth
-- Complex state synchronization
-- Hard to test
+- **Unified State Management**: Single `ProtocolContext` with `useProtocols` hook
+- **Storage Abstraction**: localStorage-backed protocol persistence with default IGNORE protocols
+- **UI Components**: Ready-to-use React components for protocol display and editing
+- **Type Safety**: Support for both stain and region protocol types
 
-**After:**
-- ✅ Single `useProtocols()` hook
-- ✅ One unified protocols array
-- ✅ React Context (no manual subscriptions)
-- ✅ Storage abstracted (localStorage/memory/DSA)
-- ✅ Fully tested
+## Installation
 
-## 🚀 Quick Start
+```bash
+# In a workspace package
+npm install @bdsa/protocol-components
+```
 
-### 1. Wrap your app with ProtocolProvider
+## Core Concepts
 
-```javascript
+### Default Protocols
+
+The system includes two default "IGNORE" protocols:
+- `ignore-stain` (Stain): Mark slide for exclusion from stain processing
+- `ignore-region` (Region): Mark slide for exclusion from region processing
+
+These cannot be deleted and are always available.
+
+## Usage
+
+### 1. Wrap Your App with ProtocolProvider
+
+```jsx
 import { ProtocolProvider } from '@bdsa/protocol-components';
 
 function App() {
   return (
     <ProtocolProvider>
-      <YourComponents />
+      <YourAppContent />
     </ProtocolProvider>
   );
 }
 ```
 
-### 2. Use the ONE hook you need
+### 2. Use the useProtocols Hook
 
-```javascript
+```jsx
 import { useProtocols } from '@bdsa/protocol-components';
 
-function ProtocolList() {
+function ProtocolsTab() {
   const {
     protocols,           // All protocols
-    stainProtocols,      // Filtered by type='stain'
-    regionProtocols,     // Filtered by type='region'
-    addProtocol,         // Add new protocol
-    updateProtocol,      // Update existing
-    deleteProtocol,      // Delete by ID
-    loading,             // Loading state
-    error                // Error state
+    stainProtocols,      // Filtered stain protocols
+    regionProtocols,     // Filtered region protocols
+    addProtocol,         // (protocol) => void
+    updateProtocol,      // (id, updates) => void
+    deleteProtocol,      // (id) => void
+    loading,             // boolean
+    error               // string | null
   } = useProtocols();
 
-  if (loading) return <div>Loading...</div>;
+  // Add a new protocol
+  const handleAdd = async () => {
+    await addProtocol({
+      type: 'stain',
+      name: 'My Stain',
+      description: 'Custom stain protocol',
+      stainType: 'TDP-43',
+      // ... other fields
+    });
+  };
+
+  // Update an existing protocol
+  const handleUpdate = async (id) => {
+    await updateProtocol(id, {
+      name: 'Updated Name',
+      description: 'Updated description'
+    });
+  };
+
+  // Delete a protocol (default protocols are protected)
+  const handleDelete = async (id) => {
+    await deleteProtocol(id);
+  };
 
   return (
     <div>
       <h2>Stain Protocols ({stainProtocols.length})</h2>
-      {stainProtocols.map(p => (
-        <div key={p.id}>
-          {p.name}
-          <button onClick={() => deleteProtocol(p.id)}>Delete</button>
-        </div>
+      {stainProtocols.map(protocol => (
+        <div key={protocol.id}>{protocol.name}</div>
       ))}
-      
-      <button onClick={() => addProtocol({
-        type: 'stain',
-        name: 'H&E',
-        stainType: 'Histology'
-      })}>
-        Add Protocol
-      </button>
     </div>
   );
 }
 ```
 
-## 📦 What's Included
+### 3. Use UI Components
 
-### State Management
-- `ProtocolProvider` - Context provider (wrap your app)
-- `useProtocols()` - The ONE hook for everything
+#### ProtocolList
 
-### Storage
-- `LocalStorageProtocolStorage` - Persists to localStorage (default)
-- `InMemoryProtocolStorage` - In-memory (great for testing)
-- Custom storage - Implement your own (e.g., DSA server)
+Display a grid of protocols with edit/delete actions:
 
-### Utilities
-- `generateProtocolId()` - Generate unique IDs
+```jsx
+import { ProtocolList } from '@bdsa/protocol-components';
 
-## 🧪 Testing
+function MyProtocolsPage() {
+  const { stainProtocols, deleteProtocol } = useProtocols();
+  const [editingProtocol, setEditingProtocol] = useState(null);
 
-All state management is fully tested:
-
-```bash
-npm test
-```
-
-**9 test suites covering:**
-- ✅ Default protocols (IGNORE)
-- ✅ Adding protocols
-- ✅ Updating protocols
-- ✅ Deleting protocols
-- ✅ Type filtering (stain vs region)
-- ✅ Storage persistence
-- ✅ Loading from storage
-
-## 🎨 API Reference
-
-### `useProtocols()`
-
-Returns an object with:
-
-```typescript
-{
-  // State
-  protocols: Protocol[],           // All protocols
-  stainProtocols: Protocol[],      // type='stain' only
-  regionProtocols: Protocol[],     // type='region' only
-  loading: boolean,                // Loading state
-  error: string | null,            // Error message
-
-  // Actions
-  addProtocol: (protocol) => void,
-  updateProtocol: (protocol) => void,
-  deleteProtocol: (id) => void,
-  clearAllProtocols: () => Promise<void>,
-
-  // Selectors
-  getProtocolsByType: (type) => Protocol[],
-  getProtocolById: (id) => Protocol | undefined
+  return (
+    <ProtocolList
+      protocols={stainProtocols}
+      onEdit={setEditingProtocol}
+      onDelete={deleteProtocol}
+    />
+  );
 }
 ```
 
-### Protocol Object
+#### ProtocolCard
 
-```typescript
-{
-  id: string,                     // Auto-generated if not provided
-  type: 'stain' | 'region',       // Required
-  name: string,                    // Required
-  description?: string,
-  // ... any other fields specific to stain or region
+Display a single protocol:
+
+```jsx
+import { ProtocolCard } from '@bdsa/protocol-components';
+
+function ProtocolDetails({ protocol }) {
+  return (
+    <ProtocolCard
+      protocol={protocol}
+      onEdit={() => console.log('Edit', protocol.id)}
+      onDelete={() => console.log('Delete', protocol.id)}
+    />
+  );
 }
 ```
 
-## 🔧 Custom Storage
+#### ProtocolModal
 
-Want to store protocols in a database or DSA server? Easy:
+Modal for creating/editing protocols with schema-driven validation:
 
-```javascript
-class MyCustomStorage {
+```jsx
+import { useState } from 'react';
+import { ProtocolModal, useProtocols } from '@bdsa/protocol-components';
+
+function ProtocolManagement() {
+  const { addProtocol, updateProtocol } = useProtocols();
+  const [showModal, setShowModal] = useState(false);
+  const [editingProtocol, setEditingProtocol] = useState(null);
+
+  const handleSave = async (formData) => {
+    if (editingProtocol) {
+      await updateProtocol(editingProtocol.id, formData);
+    } else {
+      await addProtocol(formData);
+    }
+    setShowModal(false);
+    setEditingProtocol(null);
+  };
+
+  return (
+    <>
+      <button onClick={() => setShowModal(true)}>Add Protocol</button>
+      
+      {showModal && (
+        <ProtocolModal
+          protocol={editingProtocol}
+          type="stain"  // or "region"
+          onSave={handleSave}
+          onClose={() => {
+            setShowModal(false);
+            setEditingProtocol(null);
+          }}
+          schemaValidator={mySchemaValidator} // optional
+        />
+      )}
+    </>
+  );
+}
+```
+
+**ProtocolModal Props:**
+- `protocol`: Existing protocol to edit (null for new)
+- `type`: `'stain'` or `'region'`
+- `onSave`: `(formData) => Promise<void>` - called when form is submitted
+- `onClose`: `() => void` - called when modal is closed
+- `schemaValidator`: Optional schema validator instance for advanced validation and dynamic field options
+
+**Without schemaValidator:** The modal provides basic form fields and validation.
+
+**With schemaValidator:** The modal dynamically shows/hides fields based on schema definitions and provides advanced validation. The validator should have methods like:
+- `getStainTypeOptions()` / `getRegionTypeOptions()`
+- `getAntibodyOptions(stainType)`
+- `getLandmarkOptions(regionType)`
+- `validateStainProtocol(data)` / `validateRegionProtocol(data)`
+
+### 4. Custom Storage (Advanced)
+
+```jsx
+import { ProtocolProvider } from '@bdsa/protocol-components';
+
+class CustomStorage {
   async load() {
+    // Load from API
     const response = await fetch('/api/protocols');
-    return response.json();
+    return await response.json();
   }
 
   async save(protocols) {
+    // Save to API
     await fetch('/api/protocols', {
       method: 'POST',
       body: JSON.stringify(protocols)
     });
   }
-
-  async clear() {
-    await fetch('/api/protocols', { method: 'DELETE' });
-  }
 }
 
-// Use it
-<ProtocolProvider storage={new MyCustomStorage()}>
-  <App />
-</ProtocolProvider>
+function App() {
+  return (
+    <ProtocolProvider storage={new CustomStorage()}>
+      <YourApp />
+    </ProtocolProvider>
+  );
+}
 ```
 
-## 🎯 Examples
+## Protocol Data Structure
 
-### Add a Stain Protocol
-
-```javascript
-const { addProtocol } = useProtocols();
-
-addProtocol({
-  type: 'stain',
-  name: 'H&E',
-  stainType: 'Histology',
-  technique: 'Standard',
-  description: 'Hematoxylin and Eosin'
-});
+### Stain Protocol
+```typescript
+{
+  id: string;                    // Auto-generated
+  type: 'stain';
+  name: string;
+  description?: string;
+  stainType: string;             // e.g., 'TDP-43', 'HE', 'Silver'
+  antibody?: string;
+  technique?: string;
+  phosphoSpecific?: string;
+  dilution?: string;
+  vendor?: string;
+  chromogen?: string;
+  _isDefault?: boolean;          // Protected from deletion
+}
 ```
 
-### Update a Protocol
-
-```javascript
-const { updateProtocol } = useProtocols();
-
-updateProtocol({
-  id: 'protocol-123',
-  name: 'Updated Name',
-  description: 'New description'
-});
+### Region Protocol
+```typescript
+{
+  id: string;                    // Auto-generated
+  type: 'region';
+  name: string;
+  description?: string;
+  regionType: string;            // e.g., 'hippocampus', 'cortex'
+  landmarks?: string[];          // Sub-regions
+  hemisphere?: string;           // 'left', 'right', 'unknown'
+  sliceOrientation?: string;     // 'axial', 'coronal', 'sagittal'
+  sliceThickness?: number;       // in microns
+  _isDefault?: boolean;          // Protected from deletion
+}
 ```
 
-### Filter and Display
+## Testing
 
-```javascript
-const { stainProtocols, regionProtocols } = useProtocols();
+The package includes comprehensive tests:
 
-return (
-  <div>
-    <h2>Stains</h2>
-    {stainProtocols.map(p => <ProtocolCard key={p.id} protocol={p} />)}
-    
-    <h2>Regions</h2>
-    {regionProtocols.map(p => <ProtocolCard key={p.id} protocol={p} />)}
-  </div>
-);
+```bash
+# Run tests
+npm test
+
+# Watch mode
+npm run test:watch
+
+# With UI
+npm run test:ui
+
+# With coverage
+npm run test:coverage
 ```
 
-## 🔄 Migration from Old System
+## Architecture
 
-**Old (Wonky):**
-```javascript
-// Multiple pieces of state
-const [stainProtocols, setStainProtocols] = useState([]);
-const [regionProtocols, setRegionProtocols] = useState([]);
+### Components
+- `ProtocolContext.jsx`: React Context for state management
+- `protocolStorage.js`: Storage abstraction layer
+- `ProtocolCard.jsx`: Individual protocol display
+- `ProtocolList.jsx`: Protocol grid with actions
+- `ProtocolModal.jsx`: Create/edit modal form
 
-// Manual subscriptions
-useEffect(() => {
-  const unsubscribe = protocolStore.subscribe(() => {
-    setStainProtocols(protocolStore.stainProtocols);
-    setRegionProtocols(protocolStore.regionProtocols);
-  });
-  return unsubscribe;
-}, []);
+### Key Benefits
+- **Single Source of Truth**: All protocol state in one place
+- **No Manual Subscriptions**: React Context handles updates automatically
+- **Type-Safe Filtering**: Automatic `stainProtocols` and `regionProtocols`
+- **Protected Defaults**: IGNORE protocols can't be deleted
+- **Persistent**: Automatic localStorage sync
+- **Tested**: Comprehensive test coverage
 
-// Class-based methods
-protocolStore.addStainProtocol(newProtocol);
-protocolStore.saveStainProtocols();
+## Migration from Old System
+
+If you're migrating from a class-based store with manual subscriptions:
+
+**Before:**
+```jsx
+import dataStore from './utils/dataStore';
+
+function MyComponent() {
+  const [protocols, setProtocols] = useState([]);
+
+  useEffect(() => {
+    const unsubscribe = dataStore.subscribe(() => {
+      setProtocols(dataStore.getProtocols('stain'));
+    });
+    return unsubscribe;
+  }, []);
+
+  const handleAdd = (protocol) => {
+    dataStore.addProtocol('stain', protocol);
+  };
+}
 ```
 
-**New (Clean):**
-```javascript
-// ONE hook
-const { stainProtocols, regionProtocols, addProtocol } = useProtocols();
+**After:**
+```jsx
+import { useProtocols } from '@bdsa/protocol-components';
 
-// Just use it
-addProtocol({ type: 'stain', name: 'H&E' });
-// Auto-saves!
+function MyComponent() {
+  const { stainProtocols, addProtocol } = useProtocols();
+
+  const handleAdd = (protocol) => {
+    addProtocol({ ...protocol, type: 'stain' });
+  };
+}
 ```
 
-## 📚 Features
+## When NOT to Use This Package
 
-- ✅ Single source of truth
-- ✅ Automatic persistence
-- ✅ Type-safe (TypeScript ready)
-- ✅ Fully tested
-- ✅ Storage abstraction
-- ✅ Default IGNORE protocols
-- ✅ React Hooks API
-- ✅ No manual subscriptions
-- ✅ Clean, modern code
+This package is designed for standalone protocol management without external syncing. **Do not use this package if:**
 
----
+- You need DSA (Digital Slide Archive) integration and protocol syncing
+- You need to track remote versions and local modifications
+- You need protocol GUIDs managed by external systems
+- You need custom protocol collection management
 
-**That's it!** No more wonky state management. Just one hook. 🎉
+For DSA-integrated applications (like the wrangler app), keep using the custom `protocolStore` implementation.
 
+## License
 
+MIT
