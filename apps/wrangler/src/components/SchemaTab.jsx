@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SchemaViewer } from '@bdsa/schema-components';
+import SchemaViewer from '../../../../packages/schema-components/src/SchemaViewer';
 import './SchemaTab.css';
 
 const SchemaTab = () => {

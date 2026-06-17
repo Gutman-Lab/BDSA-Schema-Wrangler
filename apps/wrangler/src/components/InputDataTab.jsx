@@ -466,13 +466,14 @@ const InputDataTab = () => {
                 }
 
                 // Auto-pull regex rules from DSA server if available
+                const config = dsaAuthStore.getConfig();
+                // Use metadataSyncTargetFolder if set, otherwise fall back to resourceId
+                const metadataTargetFolder = config.metadataSyncTargetFolder && config.metadataSyncTargetFolder.trim()
+                    ? config.metadataSyncTargetFolder.trim()
+                    : config.resourceId;
+
                 try {
                     const { getRegexRulesFromFolder } = await import('../utils/dsaIntegration.js');
-                    const config = dsaAuthStore.getConfig();
-                    // Use metadataSyncTargetFolder if set, otherwise fall back to resourceId
-                    const metadataTargetFolder = config.metadataSyncTargetFolder && config.metadataSyncTargetFolder.trim()
-                        ? config.metadataSyncTargetFolder.trim()
-                        : config.resourceId;
 
                     const regexResult = await getRegexRulesFromFolder(
                         config.baseUrl,
@@ -504,7 +505,6 @@ const InputDataTab = () => {
                 // Auto-pull column mappings from DSA server if available
                 try {
                     const { getColumnMappingsFromFolder } = await import('../utils/dsaIntegration.js');
-                    const config = dsaAuthStore.getConfig();
                     const mappingsResult = await getColumnMappingsFromFolder(
                         config.baseUrl,
                         metadataTargetFolder,
@@ -532,7 +532,6 @@ const InputDataTab = () => {
                 // Auto-pull protocols from DSA server if available
                 try {
                     const { pullProtocolsFromDSA } = await import('../utils/dsaIntegration.js');
-                    const config = dsaAuthStore.getConfig();
                     const protocolResult = await pullProtocolsFromDSA(
                         config.baseUrl,
                         metadataTargetFolder,
@@ -1032,7 +1031,7 @@ const InputDataTab = () => {
                         )}
                         <button
                             onClick={() => {
-                                if (confirm('🗑️ Clear ALL data and start fresh?\n\nThis will delete all loaded data, localStorage, and modified items.')) {
+                                if (window.confirm('🗑️ Clear ALL data and start fresh?\n\nThis will delete all loaded data, localStorage, and modified items.')) {
                                     localStorage.clear();
                                     dataStore.clearData();
                                     setCsvFile(null);

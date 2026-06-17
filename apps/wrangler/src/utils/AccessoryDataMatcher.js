@@ -210,12 +210,13 @@ class AccessoryDataMatcher {
         // Try to match each accessory item using the specified filename field
         accessoryData.forEach((accessoryItem, accessoryIndex) => {
             let matched = false;
+            let dsaItem = null;
 
             const accessoryFilename = accessoryItem[filenameField];
 
             if (accessoryFilename) {
                 // Try exact match first
-                let dsaItem = dsaFilenameMap.get(accessoryFilename);
+                dsaItem = dsaFilenameMap.get(accessoryFilename);
 
                 if (!dsaItem) {
                     // Try case-insensitive match

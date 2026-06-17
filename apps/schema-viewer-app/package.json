@@ -2,7 +2,6 @@
   "name": "bdsa-schema-viewer",
   "private": true,
   "version": "1.0.0",
-  "type": "module",
   "description": "Standalone BDSA Schema Viewer - A containerized service for viewing BDSA schemas",
   "scripts": {
     "copy-schema": "cp ../wrangler/public/bdsa-schema.json public/bdsa-schema.json && echo '✅ Copied latest bdsa-schema.json from wrangler'",

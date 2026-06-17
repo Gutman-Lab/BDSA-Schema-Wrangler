@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SchemaViewer } from '@bdsa/schema-components';
+import SchemaViewer from '../../../packages/schema-components/src/SchemaViewer';
 import FlattenedDataView from './components/FlattenedDataView';
 import CdeReferenceView from './components/CdeReferenceView';
 import './App.css';
