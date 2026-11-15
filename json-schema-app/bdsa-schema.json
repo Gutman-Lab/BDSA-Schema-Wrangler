@@ -13,8 +13,8 @@
         "bdsaID": {
             "type": "string",
             "title": "BDSA ID",
-            "pattern": "^BDSA\\d+\\.\\d+$",
-            "description": "Unique BDSA case identifier (example: \"BDSA1.33\")"
+            "pattern": "^BDSA-[A-Z]{3}-\\d{4}$",
+            "description": "Unique BDSA case identifier: institution code plus zero-padded case number (example: \"BDSA-EMY-0001\")"
         },
         "stainIDs": {
             "type": "array",
