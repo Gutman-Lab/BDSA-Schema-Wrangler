@@ -6,8 +6,8 @@
     "type": "object",
     "required": [
         "bdsaID",
-        "stainID",
-        "regionIDs"
+        "regionIDs",
+        "stainIDs"
     ],
     "properties": {
         "bdsaID": {
